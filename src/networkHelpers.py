@@ -50,3 +50,23 @@ def learningRateSchedule(LR_params, n_s, steps_in_cycle):
         eta_t = eta_max - fraction * (eta_max - eta_min)
         
     return eta_t
+
+def adamOptimizer(adam, network, grads, eta, t, beta1=0.9, beta2=0.999, eps=1e-8):
+    curr_t = t + 1
+    
+    for i in range(2):
+        adam['m_W'][i] = beta1 * adam['m_W'][i] + (1 - beta1) * grads['W'][i]
+        adam['v_W'][i] = beta2 * adam['v_W'][i] + (1 - beta2) * (grads['W'][i]**2)
+        
+        m_hat = adam['m_W'][i] / (1 - beta1**curr_t)
+        v_hat = adam['v_W'][i] / (1 - beta2**curr_t)
+        
+        network['W'][i] -= eta * m_hat / (np.sqrt(v_hat) + eps)
+
+        adam['m_b'][i] = beta1 * adam['m_b'][i] + (1 - beta1) * grads['b'][i]
+        adam['v_b'][i] = beta2 * adam['v_b'][i] + (1 - beta2) * (grads['b'][i]**2)
+        
+        m_hat_b = adam['m_b'][i] / (1 - beta1**curr_t)
+        v_hat_b = adam['v_b'][i] / (1 - beta2**curr_t)
+        
+        network['b'][i] -= eta * m_hat_b / (np.sqrt(v_hat_b) + eps)
