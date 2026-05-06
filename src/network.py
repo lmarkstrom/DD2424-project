@@ -1,9 +1,8 @@
-import copy
 
 import numpy as np
-from dataHelpers import loadData, preprocess, augmentDataFlip, dataAugmentationTransform
+from dataHelpers import loadData, preprocess, augmentDataFlip, dataAugmentationTransform, smoothLabels
 from plotHelpers import plotPerformance
-from networkHelpers import softmax, computeAccuracy, computeCost, computeLoss, generateMX, learningRateSchedule
+from networkHelpers import softmax, computeAccuracy, computeCost, computeLoss, generateMX, learningRateSchedule, adamOptimizer
 
 class Network:
     def __init__(self, LR_params, GD_params, CN_params):
@@ -52,7 +51,7 @@ class Network:
         }
     
     # Load data and preprocess it
-    def loadData(self, full=True, preprocess_data=True, augment_data=False):
+    def loadData(self, full=True, preprocess_data=True, augment_data=False, smooth_labels=False):
         if full:
             X_train, Y_train, y_train, X_val, Y_val, y_val, X_test, Y_test, y_test = loadData()
             self.data = {
@@ -71,6 +70,9 @@ class Network:
             self.data['X_train'], self.data['X_val'], self.data['X_test'] = preprocess(
                 self.data['X_train'], self.data['X_val'], self.data['X_test'], self.data['X_train'].shape[0]
             )
+            
+        if smooth_labels:
+            self.data['Y_train'] = smoothLabels(self.data['Y_train'], 0.1)
         
         if augment_data:
             pass
@@ -80,7 +82,7 @@ class Network:
         self.CN_params['n_s'] = (self.GD_params['n'] // self.GD_params['n_batch']) * self.GD_params['n_epochs'] // 2
     
     # Train the network using mini-batch gradient descent 
-    def train(self, debug=True):
+    def train(self, debug=True, augmentation=False, dropout=False):
         n_cycles, n_batch, lam = self.GD_params['n_cycles'], self.GD_params['n_batch'], self.GD_params['lam']
         f, n_p = self.CN_params['f'], self.CN_params['n_p']
         
@@ -91,20 +93,27 @@ class Network:
         current_cycle = 0
         steps_in_cycle = 0
         t = 0
+        
+        epoch = 1
 
         MX_train = generateMX(self.data['X_train'], self.data['X_train'].shape[1], f, n_p)
         MX_val = generateMX(self.data['X_val'], self.data['X_val'].shape[1], f, n_p)
         
         while current_cycle < n_cycles:
-            indices = np.random.permutation(n)
+            indices = np.random.permutation(n)            
             X_cycle = self.data['X_train'][:, indices]
             Y_cycle = self.data['Y_train'][:, indices]
             y_cycle = self.data['y_train'][indices]
-            
             MX_cycle = MX_train[:, :, indices]
-            
-            for j in range(batches_per_epoch):
+
+            if steps_in_cycle == 0:
                 cycle_length = 2 * current_n_s
+                cycle_start_t = t
+                total_epochs_cycle = cycle_length // batches_per_epoch
+                epoch = 1
+
+            for j in range(batches_per_epoch):
+                epoch = ((t - cycle_start_t) // batches_per_epoch) + 1
                 
                 j_start = j * n_batch
                 j_end = (j + 1) * n_batch
@@ -113,18 +122,19 @@ class Network:
                 Y_batch = Y_cycle[:, j_start:j_end]
                 
                 # augementation 
-                flip_ind = np.random.rand(X_batch.shape[1]) < 0.5
-                if np.any(flip_ind):
-                    X_batch[:, flip_ind] = augmentDataFlip(X_batch[:, flip_ind])
-                for i in range(X_batch.shape[1]):
-                    if np.random.rand() < 0.5:
-                        X_batch[:, i] = dataAugmentationTransform(X_batch[:, i])
+                if augmentation:
+                    flip_ind = np.random.rand(X_batch.shape[1]) < 0.5
+                    if np.any(flip_ind):
+                        X_batch[:, flip_ind] = augmentDataFlip(X_batch[:, flip_ind])
+                    for i in range(X_batch.shape[1]):
+                        if np.random.rand() < 0.5:
+                            X_batch[:, i] = dataAugmentationTransform(X_batch[:, i])
                 
                 MX_batch = generateMX(X_batch, n_batch, f, n_p)
                 
                 eta = learningRateSchedule(self.LR_params, current_n_s, steps_in_cycle)
                 
-                fp_data = self.forwardPass(MX_batch, dropout=True)
+                fp_data = self.forwardPass(MX_batch, dropout=dropout)
                 grads, grad_Fs_flat = self.backwardPass(MX_batch, fp_data, Y_batch, lam)
                 self.updateNetwork(eta, grads, grad_Fs_flat)
 
@@ -148,7 +158,9 @@ class Network:
                     self.results['accuracies']['validation'].append(val_acc)
                     self.results['steps'].append(t)
                     
-                    print(f'Cycle {current_cycle+1}, Iteration {steps_in_cycle}/{current_n_s*2}, Loss: {loss:.4f}, V.loss: {val_loss:.4f}, Acc: {acc:.4f}, V.acc: {val_acc:.4f}')
+                if debug and (t + 1) % batches_per_epoch == 0:
+                    epoch = ((t + 1) - cycle_start_t) // batches_per_epoch
+                    print(f'Cycle {current_cycle+1}, Epoch {epoch}/{total_epochs_cycle}, Acc: {acc:.4f}, V.acc: {val_acc:.4f}')
                 
                 t += 1
                 steps_in_cycle += 1
@@ -157,6 +169,7 @@ class Network:
                     current_n_s *= 2
                     steps_in_cycle = 0
                     current_cycle += 1
+                    total_epochs_cycle = (2 * current_n_s) // batches_per_epoch
                     if current_cycle >= n_cycles:
                         break
         if debug:
@@ -252,11 +265,10 @@ class Network:
     # Update network parameters using computed gradients
     def updateNetwork(self, eta, grads, grad_Fs_flat):
         f, n_f = self.CN_params['f'], self.CN_params['n_f']
+
         
         for k in range(2):
             self.network['W'][k] -= eta * grads['W'][k]
             self.network['b'][k] -= eta * grads['b'][k]
         self.network['conv_filters'] -= eta * grad_Fs_flat.reshape((f, f, 3, n_f), order='C')
         self.network['b_conv'] -= eta * grads['b_conv']
-    
-    

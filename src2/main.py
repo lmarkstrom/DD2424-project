@@ -3,21 +3,23 @@ import warnings
 import argparse
 import numpy as np
 from network import Network
+import torch
 
 os.environ["PYTHONWARNINGS"] = "ignore"
 warnings.simplefilter("ignore")
 
-def trainFullNetwork():
-    CN_params = {'f': 4, 'n_f': 40}
-    GD_params = {'n_cycles': 3, 'n_hidden': 400, 'k': 10, 'n_batch': 100, 'lam': 0.008}
-    LR_params = {'etas': [0.00001, 0.1], 'n_s': 800}
+def trainNet():
+    CN_params = {'f': 4, 'n_f': 40, 'n_s': 800}
+    GD_params = {'n_cycles': 4, 'n_epochs': 3, 'n_hidden': 400, 'k': 10, 'n_batch': 100, 'lam': 0.001}
+    LR_params = {'etas': [0.00001, 0.1]}
     
+    x = torch.rand((1, 3, 32, 32))
     network = Network(LR_params, GD_params, CN_params)
-    
-    network.loadData()
-    network.train(debug=True)
-    network.evaluate()
-    
+    x = network.forward(x)
+    network.trainModel()
+    res = network.evaluate()
+    print(res)
+
 def argParser():
     parser = argparse.ArgumentParser(description="CNN Project Runner")
     parser.add_argument(
@@ -35,7 +37,7 @@ def main():
     args = argParser()
     
     if args.mode == "full":
-        trainFullNetwork()
+        trainNet()
     else:
         print(f"Mode '{args.mode}' is not implemented yet.")
     
