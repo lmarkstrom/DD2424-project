@@ -86,9 +86,6 @@ class Network(nn.Module):
     def evaluate(self):
         """
         Evaluate the trained network on the trained parameters
-
-        dataloader: The specified dataloader, either training, 
-                    valuation or test set.
         """
         correct = 0
         total = 0
@@ -103,6 +100,9 @@ class Network(nn.Module):
 
 
     def trainModel(self):
+        """
+        Train model using CLR with increasing cycle lengths
+        """
         n_cycles = self.GD_params['n_cycles']
         current_ns = (self.GD_params['n_epochs'] * len(self.trainloader)) // 2
         
