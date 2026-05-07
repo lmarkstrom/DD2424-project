@@ -10,7 +10,7 @@ warnings.simplefilter("ignore")
 
 def trainNet():
     CN_params = {'f': 4, 'n_f': 40, 'n_s': 800}
-    GD_params = {'n_cycles': 3, 'n_epochs': 3, 'n_hidden': 300, 'k': 10, 'n_batch': 100, 'lam': 0.0025}
+    GD_params = {'n_cycles': 3, 'n_epochs': 4, 'n_hidden': 300, 'k': 10, 'n_batch': 100, 'lam': 0.0025}
     LR_params = {'etas': [0.00001, 0.1]}
     
     x = torch.rand((1, 3, 32, 32))

@@ -41,8 +41,6 @@ class Network(nn.Module):
             momentum=0.9,
             weight_decay=GD_params['lam']
         )
-        # TODO: Test adam later
-        # self.optimizer = optim.Adam(self.parameters(), lr=LR_params['etas'][0])
         self.scheduler = optim.lr_scheduler.CyclicLR(
                 self.optimizer, 
                 base_lr=self.LR_params['etas'][0],
