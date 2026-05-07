@@ -69,6 +69,7 @@ class Network(nn.Module):
 
     def forward(self, x):
         x = self.patchify(x)
+        x = F.relu(x)
         
         # ========================
         # VGG Block-1
