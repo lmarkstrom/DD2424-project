@@ -51,7 +51,7 @@ Extension of initial model with the addition of a single VGG layer, with filter 
 - n_epochs: 28
 - n_hidden: 300
 - n_batch: 100
-- Lambda: 0 (try independently)
+- Lambda: 0.1 (if nothing else stated, taken from the basic network)
 - Eta: 0.001
 - Patchify layer: f: 2, s: 2, n_f: 32
 - VGG layer 1: f: 3, s: 1, n_f: 32

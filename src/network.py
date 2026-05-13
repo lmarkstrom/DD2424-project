@@ -89,10 +89,12 @@ class Network(nn.Module):
             padding='same')
         # ========================
 
+        # =======================
+        # Dropout
+        self.dropout = nn.Dropout(RE_params["dropout_rate"])
         # ========================
         # Linear layers
         self.fc1 = nn.Linear(in_features=CN_params['l_fc1']['in'], out_features=CN_params['l_fc1']['out'])
-        self.dropout = nn.Dropout(RE_params["dropout_rate"])
         self.fc2 = nn.Linear(CN_params['l_fc2']['in'], CN_params['l_fc2']['out'])
          # ========================
 
@@ -133,7 +135,6 @@ class Network(nn.Module):
         # ========================
 
     def forward(self, x):
-        x = self.dropout(x)
         x = self.patchify(x)
         x = F.relu(x)
         
@@ -147,6 +148,9 @@ class Network(nn.Module):
         
         # Apply maxpooling layer
         x = self.pool1(x)
+
+        x = self.dropout(x)
+        # ========================
         # ========================
         # VGG Block-2
         x = self.conv3(x)
@@ -157,6 +161,8 @@ class Network(nn.Module):
         
         # Apply maxpooling layer
         x = self.pool2(x)
+        x = self.dropout(x)
+        # ========================
         # ========================
         # VGG Block-3
         x = self.conv5(x)
@@ -167,16 +173,14 @@ class Network(nn.Module):
         # Removed pooling in last layer as per instructions
         # ========================
 
-
+        x = self.dropout(x)
         # Flattening (to connect to fc1 layer)
         x = x.view(x.size(0), -1)
 
         # Run through fc1
         x = self.fc1(x)
         x = F.relu(x)
-
         x = self.dropout(x)
-
         # fc2 layer
         x = self.fc2(x)
 
