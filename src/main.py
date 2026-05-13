@@ -1,33 +1,32 @@
 import os
 import warnings
-import argparse
 import numpy as np
 from network import Network
+import torch
+from mainHelpers import argParser, lambdaSearch
 
 os.environ["PYTHONWARNINGS"] = "ignore"
 warnings.simplefilter("ignore")
 
-def trainFullNetwork():
-    CN_params = {'f': 4, 'n_f': 40}
-    GD_params = {'n_cycles': 3, 'n_hidden': 400, 'k': 10, 'n_batch': 100, 'lam': 0.008}
-    LR_params = {'etas': [0.00001, 0.1], 'n_s': 800}
+def trainNet():
+    CN_params = {'f': 4, 'n_f': 40, 'n_s': 800}
+    GD_params = {'n_cycles': 1, 'n_epochs': 28, 'n_hidden': 300, 'k': 10, 'n_batch': 100, 'lam': 0.0025}
+    CN_params = {
+        'l_patchify': {'f': 2, 's': 2, 'n_f': 32},
+        'l_vgg1': {'f': 3, 's': 1, 'n_f': 32},
+        'l_fc1': {'in': 32 * 8 * 8, 'out': GD_params['n_hidden']},
+        'l_fc2': {'in': GD_params['n_hidden'], 'out': GD_params['k']}
+    }
+    LR_params = {'etas': [1e-5, 1e-1]}
     
+    x = torch.rand((1, 3, 32, 32))
     network = Network(LR_params, GD_params, CN_params)
-    
-    network.loadData()
-    network.train(debug=True)
-    network.evaluate()
-    
-def argParser():
-    parser = argparse.ArgumentParser(description="CNN Project Runner")
-    parser.add_argument(
-        "--mode", 
-        type=str, 
-        default="train", 
-        help="Mode to run the script in: 'full', 'train', or 'test'"
-    )
+    x = network.forward(x)
+    network.trainModel(plot=True)
+    res = network.evaluate(network.testloader)[0]
+    print(f'Final Test Accuracy: {res}')
 
-    return parser.parse_args()
+
 
 def main():
     np.random.seed(42) # TODO: Remove for more randomness, which can sometimes give better results
@@ -35,7 +34,9 @@ def main():
     args = argParser()
     
     if args.mode == "full":
-        trainFullNetwork()
+        trainNet()
+    elif args.mode == "lam-search":
+        lambdaSearch([0.0001, 0.00025, 0.0005, 0.001]) # Lambdas = [0.0001, 0.00025, 0.0005, 0.001, 0.0025, 0.005, 0.01]
     else:
         print(f"Mode '{args.mode}' is not implemented yet.")
     
