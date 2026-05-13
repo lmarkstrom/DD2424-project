@@ -43,9 +43,22 @@ Added batch normalization after each convolutional layer and the first f.c. laye
 - Accuracy: 74.03%
 
 ## Basic regularizations
-| Model | Performance |
-| :--- | :--- |
-| **Basic** | x% |
+**Parameters:**
+- f: 4
+- n_f: 40
+- n_s: 800
+- n_cycles: 1
+- n_epochs: 28
+- n_hidden: 300
+- n_batch: 100
+- Lambda: 0 (try independantly)
+- Eta: 0.001
+- Patchify layer: f: 2, s: 2, n_f: 32
+- VGG layer 1: f: 3, s: 1, n_f: 32
+- VGG layer 2: f: 3, s: 1, n_f: 64
+- VGG layer 3: f: 3, s: 1, n_f: 128
+- Fully connected layer 1: in: 2048, out: n_hidden
+- Fully connected layer 2: in: n_hidden, out: 10
 
 ### Dropout
 | Model | Performance | Dropout |
