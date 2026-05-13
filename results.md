@@ -63,8 +63,7 @@ Extension of initial model with the addition of a single VGG layer, with filter 
 ### Dropout
 | Model | Performance | Dropout Rate |
 | :--- | :--- | :--- |
-| Dropout 1 | x% | 10% |
-| Dropout 2 | x% | 20% |
+| Dropout 2 | 75.11% | 20% |
 
 ### Weight Decay (L2-regularization)
 | Model | Performance | Lambda |
@@ -73,9 +72,9 @@ Extension of initial model with the addition of a single VGG layer, with filter 
 | Weight Decay 2 | x% | 0.01 |
 
 ### Data augmentation
-| Model | Performance | Mirror Probability (%) | Shifting Probability (%) | Shifting (pixels) |
-| :--- | :--- | :--- | :--- | :--- |
-| Image Mirror and shifting |  x | 50% | 50% | 3 |
+| Model | Performance | Mirror Probability (%) | Shifting (%) |
+| :--- | :--- | :--- | :--- |
+| Image Mirror and shifting |  x | 50% | 0.1 |
 
 
 # Combined Regularization Techniques and Normalization
