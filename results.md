@@ -69,12 +69,12 @@ Extension of initial model with the addition of a single VGG layer, with filter 
 | Model | Performance | Lambda |
 | :--- | :--- | :--- |
 | Weight Decay 1 | 74.03% | 0.1 |
-| Weight Decay 2 | x% | 0.01 |
+| Weight Decay 2 | 66.63% | 0.01 |
 
 ### Data augmentation
 | Model | Performance | Mirror Probability (%) | Shifting (%) |
 | :--- | :--- | :--- | :--- |
-| Image Mirror and shifting |  x | 50% | 0.1 |
+| Image Mirror and shifting |  76.59 | 50% | 0.1 |
 
 
 # Combined Regularization Techniques and Normalization
