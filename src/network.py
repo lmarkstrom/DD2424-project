@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
+import numpy as np
 
 from dataHelper import loadData
 from plotHelper import plotPerformance
@@ -13,6 +14,8 @@ class Network(nn.Module):
         LR_params: Learning rate parameters
         GD_params: Gradient decent parameters
         CN_params: Convolution layer parameters
+        train_size (int): Size of the training set
+        val_size (int): Size of the validation set set
 
         Initializes the network layers layers and fully connected layers
         for image handling, hardcoded for (32 // f) ** 2 atm atm
@@ -48,8 +51,8 @@ class Network(nn.Module):
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.AdamW(
             self.parameters(), 
-            lr=LR_params['etas'][0],
-            weight_decay=GD_params['lam']
+            lr=LR_params['eta'],
+            weight_decay=GD_params['lam'],
         )
         # self.optimizer = optim.SGD(
         #     self.parameters(), 
@@ -119,14 +122,67 @@ class Network(nn.Module):
         accuracy = correct / total
         loss /= count
         return accuracy, loss
-
-
+    
     def trainModel(self, debug=True, plot=False):
+        """
+        Train model using CLR with increasing cycle lengths
+        """
+        n_epochs = self.GD_params['n_epochs']
+
+        loss_delta = np.inf
+        val_loss_prev = np.inf
+        
+        if plot:
+            steps = 0
+            results = {'loss': [], 'val_loss': [], 'acc': [], 'val_acc': [], 'steps': []}
+        
+        for epoch in range(n_epochs):
+            running_loss = 0.0
+            batch_count = 0
+            
+            for i, (inputs, labels) in enumerate(self.trainloader, 0):
+                self.optimizer.zero_grad()
+
+                outputs = self(inputs)
+                loss = self.criterion(outputs, labels)
+                loss.backward()
+                self.optimizer.step()
+                # self.scheduler.step()
+                
+                running_loss += loss.item()
+                batch_count += 1
+
+            if debug:
+                avg_loss = running_loss / batch_count
+                val_accuracy, val_loss = self.evaluate(self.valloader)
+                loss_delta_new = val_loss - avg_loss
+                if loss_delta_new > loss_delta and val_loss_prev < val_loss:
+                    print(f"Maybe starting to overfit?: Train loss: {avg_loss:.4f} Val loss: {val_loss:.4f}, diff: {loss_delta_new:.4f}")
+                loss_delta = loss_delta_new
+                val_loss_prev = val_loss
+
+                print(f'Epoch {epoch+1}/{n_epochs} | Loss: {avg_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_accuracy:.4f}')
+            if plot:
+                results['loss'].append(avg_loss)
+                results['val_loss'].append(val_loss)
+                results['acc'].append(self.evaluate(self.trainloader)[0])
+                results['val_acc'].append(val_accuracy)
+                results['steps'].append(steps)
+                steps += 1
+            
+        if plot:
+            plotPerformance(results) 
+
+
+    def trainModelCLR(self, debug=True, plot=False):
         """
         Train model using CLR with increasing cycle lengths
         """
         n_cycles = self.GD_params['n_cycles']
         current_ns = (self.GD_params['n_epochs'] * len(self.trainloader)) // 2
+
+        loss_delta = np.inf
+        val_loss_prev = np.inf
         
         if plot:
             steps = 0
@@ -166,11 +222,16 @@ class Network(nn.Module):
                     
                     if steps_made_in_current_cycle >= steps_in_current_cycle:
                         break
-                    
 
                 if debug:
                     avg_loss = running_loss / batch_count
                     val_accuracy, val_loss = self.evaluate(self.valloader)
+                    loss_delta_new = val_loss - avg_loss
+                    if loss_delta_new > loss_delta and val_loss_prev < val_loss:
+                        print(f"Maybe starting to overfit?: Train loss: {avg_loss} Val loss: {val_loss}, diff: {loss_delta_new}")
+                    loss_delta = loss_delta_new
+                    val_loss_prev = val_loss
+
                     print(f'Cycle {cycle+1}/{self.GD_params['n_cycles']}, Epoch {epochs_made_in_cycle}/{epochs_in_cycle} | Loss: {avg_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_accuracy:.4f}')
                 if plot:
                     results['loss'].append(avg_loss)

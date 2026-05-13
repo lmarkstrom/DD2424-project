@@ -15,9 +15,9 @@ No data augmentation, no dropout, no normalization and no label smoothening.
 | Model | Lambda (λ) | Performance | f | n_f | Cycles | Epochs | m | k | Batch Size | Etas |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Basic** | 0.0025 | 67.89% | 4 | 40 | 3 | 4 | 400 | 10 | 100 | [1e-5, 0.1] |
-| **Adam** | 0.0025 | 63.16% | 4 | 40 | 3 | 4 | 400 | 10 | 100 | [1e-6, 1e-3] |
+| **Adam** | 0.0025 | 63.16% | 4 | 40 | 1 | 28 | 400 | 10 | 100 | 1e-3 |
 | **1-block-VGG** | 0.0025 | 74.80% | 3 | 32 | 3 | 4 | 128 | 10 | 100 | [1e-5, 0.1] |
-| **Combined** | 0.0025 | ??.??% | 4 | 40 | 3 | 4 | 400 | 10 | 100 | [1e-5, 0.1] |
+| **Combined** | 0.0025 | 66.92% | 4 | 40 | 1 | 28 | 400 | 10 | 100 | 1e-3 |
 
 ## 3-block-VGG extension
 
