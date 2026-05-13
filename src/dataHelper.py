@@ -3,11 +3,14 @@ import torchvision
 import torchvision.transforms as transforms
 
 
-def loadData(batch_size=100):
-    transform = transforms.Compose(
+def loadData(batch_size=100, augmentations=None):
+    if augmentations is not None:
+       transform = augmentations
+    else:
+       transform = transforms.Compose(
        [transforms.ToTensor(),
        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-     )
+       )
 
     trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
                                             download=False, transform=transform)

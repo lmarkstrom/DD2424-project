@@ -21,7 +21,6 @@ Extension of initial model with the addition of a single VGG layer, with filter 
 | **Combined** | 0.0025 | 66.92% | 4 | 40 | 1 | 28 | 400 | 10 | 100 | 1e-3 |
 
 ## 3-block-VGG extension
-Added batch normalization after each convolutional layer and the first f.c. layer. 
 
 **Parameters:**
 - f: 4
@@ -40,9 +39,10 @@ Added batch normalization after each convolutional layer and the first f.c. laye
 - Fully connected layer 1: in: 2048, out: n_hidden
 - Fully connected layer 2: in: n_hidden, out: 10
 
-- Accuracy: 74.03%
+**Accuracy:** 74.03%
 
-## Basic regularizations
+## Basic Regularization Techniques
+
 **Parameters:**
 - f: 4
 - n_f: 40
@@ -51,7 +51,7 @@ Added batch normalization after each convolutional layer and the first f.c. laye
 - n_epochs: 28
 - n_hidden: 300
 - n_batch: 100
-- Lambda: 0 (try independantly)
+- Lambda: 0 (try independently)
 - Eta: 0.001
 - Patchify layer: f: 2, s: 2, n_f: 32
 - VGG layer 1: f: 3, s: 1, n_f: 32
@@ -61,31 +61,30 @@ Added batch normalization after each convolutional layer and the first f.c. laye
 - Fully connected layer 2: in: n_hidden, out: 10
 
 ### Dropout
-| Model | Performance | Dropout |
-| Dropout 1 | x% | 80% |
-| Dropout 2 | x% | 90% |
+| Model | Performance | Dropout Rate |
+| :--- | :--- | :--- |
+| Dropout 1 | x% | 10% |
+| Dropout 2 | x% | 20% |
 
 ### Weight Decay (L2-regularization)
 | Model | Performance | Lambda |
-| Weight Decay 1 | x% | x |
-| Weight Decay 2 | x% | x |
+| :--- | :--- | :--- |
+| Weight Decay 1 | 74.03% | 0.1 |
+| Weight Decay 2 | x% | 0.01 |
 
-### Image Mirror
-| Model | Performance | Image Mirror Probability |
-| Image Mirror 1 |  x | 40% |
-| Image Mirror 2 |  x | 50% |
-| Image Mirror 3 |  x | 60% |
-
-### Image Shift
-| Model | Performance | Image Shift Probability | Image Shift Pixels | 
-| Image Shift 1 | x% | 50% | +-4 |
-| Image Shift 2 | x% | 50% | +-3 |
-| Image Shift 3 | x% | 50% | +-2 |
+### Data augmentation
+| Model | Performance | Mirror Probability (%) | Shifting Probability (%) | Shifting (pixels) |
+| :--- | :--- | :--- | :--- | :--- |
+| Image Mirror and shifting |  x | 50% | 50% | 3 |
 
 
+# Combined Regularization Techniques and Normalization
+Added batch normalization after each convolutional layer and the first fully connected layer.
+
+Different combinations of previously seen best results:
 | Model | Performance | Lambda | Dropout | Image Mirror | Image Shift |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Combined 1** | x% | x | x | x | x |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Combined 1** | x% | x | x | x | x | 
 | **Combined 2** | x% | x | x | x | x |
 | **Combined 3** | x% | x | x | x | x |
 | **Combined 4** | x% | x | x | x | x |
@@ -93,10 +92,6 @@ Added batch normalization after each convolutional layer and the first f.c. laye
 
 # Todo
 Add batch normalization.
-
-Add data augmentation.
-
-Add dropout.
 
 Add label smoothening.
 

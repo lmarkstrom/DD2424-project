@@ -4,16 +4,18 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 import numpy as np
+from torchvision import transforms
 
 from dataHelper import loadData
 from plotHelper import plotPerformance
 
 class Network(nn.Module):
-    def __init__(self, LR_params, GD_params, CN_params, train_size=49000, val_size=1000):
+    def __init__(self, LR_params, GD_params, CN_params, RE_params, train_size=49000, val_size=1000):
         """
         LR_params: Learning rate parameters
         GD_params: Gradient decent parameters
         CN_params: Convolution layer parameters
+        RE_params: Regularization parameters
         train_size (int): Size of the training set
         val_size (int): Size of the validation set set
 
@@ -24,7 +26,9 @@ class Network(nn.Module):
         self.CN_params = CN_params
         self.GD_params = GD_params
         self.LR_params = LR_params
+        self.RE_params = RE_params
         
+
         # ========================
         # Patchify layer
         self.patchify = nn.Conv2d(
@@ -88,6 +92,7 @@ class Network(nn.Module):
         # ========================
         # Linear layers
         self.fc1 = nn.Linear(in_features=CN_params['l_fc1']['in'], out_features=CN_params['l_fc1']['out'])
+        self.dropout = nn.Dropout(RE_params["dropout_rate"])
         self.fc2 = nn.Linear(CN_params['l_fc2']['in'], CN_params['l_fc2']['out'])
          # ========================
 
@@ -99,18 +104,36 @@ class Network(nn.Module):
             lr=LR_params['eta'],
             weight_decay=GD_params['lam'],
         )
+        # ========================
         
+        # ========================
+        # Augementations
+        self.augementation = None
+        if RE_params['augementation']:
+            max_shift = RE_params['shift_max'] / GD_params['img_size']
+            self.augementation = transforms.Compose([
+                transforms.RandomHorizontalFlip(p=self.RE_params['flip_prob']),
+                
+                transforms.RandomAffine(degrees=0, translate=(max_shift, max_shift)),
+                
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            ])
+        # ========================
+        
+        # ========================
         # Loaders
-        self.trainloader, self.testloader, self.classes = loadData(batch_size=GD_params['n_batch'])
+        self.trainloader, self.testloader, self.classes = loadData(batch_size=GD_params['n_batch'], augmentations=self.augementation)
         train_dataset, val_dataset = random_split(
             self.trainloader.dataset, [train_size, val_size],
             generator=torch.Generator().manual_seed(42)
         )
         self.trainloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
         self.valloader = DataLoader(val_dataset, batch_size=32, shuffle=False)
-
+        # ========================
 
     def forward(self, x):
+        x = self.dropout(x)
         x = self.patchify(x)
         x = F.relu(x)
         
@@ -152,6 +175,8 @@ class Network(nn.Module):
         x = self.fc1(x)
         x = F.relu(x)
 
+        x = self.dropout(x)
+
         # fc2 layer
         x = self.fc2(x)
 
@@ -166,6 +191,7 @@ class Network(nn.Module):
 
         Returns: Accuracy and loss for the model
         """
+        self.eval()
         correct = 0
         total = 0
         loss = 0.0
@@ -180,12 +206,14 @@ class Network(nn.Module):
                 count += 1
         accuracy = correct / total
         loss /= count
+        self.train()
         return accuracy, loss
     
     def trainModel(self, debug=True, plot=False):
         """
         Train model using CLR with increasing cycle lengths
         """
+        self.train()
         n_epochs = self.GD_params['n_epochs']
 
         loss_delta = np.inf

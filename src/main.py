@@ -10,7 +10,7 @@ warnings.simplefilter("ignore")
 
 def trainNet():
     CN_params = {'f': 4, 'n_f': 40, 'n_s': 800}
-    GD_params = {'n_cycles': 1, 'n_epochs': 28, 'n_hidden': 300, 'k': 10, 'n_batch': 100, 'lam': 0.1}
+    GD_params = {'n_cycles': 1, 'n_epochs': 28, 'n_hidden': 300, 'k': 10, 'n_batch': 100, 'img_size': 32, 'lam': 0}
     CN_params = {
         'l_patchify': {'f': 2, 's': 2, 'n_f': 32},
         'l_vgg1': {'f': 3, 's': 1, 'n_f': 32},
@@ -20,9 +20,10 @@ def trainNet():
         'l_fc2': {'in': GD_params['n_hidden'], 'out': GD_params['k']}
     }
     LR_params = {'eta': 1e-3, 'etas': [1e-7, 1e-3]}
+    RE_params = {'dropout_rate': 0.1, 'augementation': False, 'flip_prob': 0.5, 'shift_max': 3}
     
     x = torch.rand((1, 3, 32, 32))
-    network = Network(LR_params, GD_params, CN_params)
+    network = Network(LR_params, GD_params, CN_params, RE_params)
     x = network.forward(x)
     network.trainModel(plot=True)
     res = network.evaluate(network.testloader)[0]
