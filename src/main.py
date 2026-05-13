@@ -10,11 +10,13 @@ warnings.simplefilter("ignore")
 
 def trainNet():
     CN_params = {'f': 4, 'n_f': 40, 'n_s': 800}
-    GD_params = {'n_cycles': 1, 'n_epochs': 28, 'n_hidden': 300, 'k': 10, 'n_batch': 100, 'lam': 0.01}
+    GD_params = {'n_cycles': 1, 'n_epochs': 28, 'n_hidden': 300, 'k': 10, 'n_batch': 100, 'lam': 0.1}
     CN_params = {
         'l_patchify': {'f': 2, 's': 2, 'n_f': 32},
         'l_vgg1': {'f': 3, 's': 1, 'n_f': 32},
-        'l_fc1': {'in': 32 * 8 * 8, 'out': GD_params['n_hidden']},
+        'l_vgg2': {'f': 3, 's': 1, 'n_f': 64},
+        'l_vgg3': {'f': 3, 's': 1, 'n_f': 128},
+        'l_fc1': {'in': 128 * 4 * 4, 'out': GD_params['n_hidden']},
         'l_fc2': {'in': GD_params['n_hidden'], 'out': GD_params['k']}
     }
     LR_params = {'eta': 1e-3, 'etas': [1e-7, 1e-3]}

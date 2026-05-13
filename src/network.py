@@ -24,13 +24,19 @@ class Network(nn.Module):
         self.CN_params = CN_params
         self.GD_params = GD_params
         self.LR_params = LR_params
-
+        
+        # ========================
+        # Patchify layer
         self.patchify = nn.Conv2d(
             in_channels=3,
             out_channels=CN_params['l_patchify']['n_f'],
             kernel_size=CN_params['l_patchify']['f'],
             stride=CN_params['l_patchify']['s'],
         )
+        # ========================
+        
+        # ========================
+        # VGG Block-1
         self.conv1 = nn.Conv2d(
             in_channels=CN_params['l_vgg1']['n_f'], 
             out_channels=CN_params['l_vgg1']['n_f'], 
@@ -44,23 +50,57 @@ class Network(nn.Module):
             stride=CN_params['l_vgg1']['s'], 
             padding='same')
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
-        
+        # ========================
+
+        # ========================
+        # VGG Block-2
+        self.conv3 = nn.Conv2d(
+            in_channels=CN_params['l_vgg1']['n_f'], 
+            out_channels=CN_params['l_vgg2']['n_f'], 
+            kernel_size=CN_params['l_vgg2']['f'], 
+            stride=CN_params['l_vgg2']['s'], 
+            padding='same')
+        self.conv4 = nn.Conv2d(
+            in_channels=(CN_params['l_vgg2']['n_f']), 
+            out_channels=CN_params['l_vgg2']['n_f'], 
+            kernel_size=CN_params['l_vgg2']['f'], 
+            stride=CN_params['l_vgg2']['s'], 
+            padding='same')
+        self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+        # ========================
+
+        # ========================
+        # VGG Block-3
+        self.conv5 = nn.Conv2d(
+            in_channels=CN_params['l_vgg2']['n_f'], 
+            out_channels=CN_params['l_vgg3']['n_f'], 
+            kernel_size=CN_params['l_vgg3']['f'], 
+            stride=CN_params['l_vgg3']['s'], 
+            padding='same')
+        self.conv6 = nn.Conv2d(
+            in_channels=CN_params['l_vgg3']['n_f'], 
+            out_channels=CN_params['l_vgg3']['n_f'], 
+            kernel_size=CN_params['l_vgg3']['f'], 
+            stride=CN_params['l_vgg3']['s'], 
+            padding='same')
+        # ========================
+
+        # ========================
+        # Linear layers
         self.fc1 = nn.Linear(in_features=CN_params['l_fc1']['in'], out_features=CN_params['l_fc1']['out'])
         self.fc2 = nn.Linear(CN_params['l_fc2']['in'], CN_params['l_fc2']['out'])
+         # ========================
 
+        # ========================
+        # Optimizers and metrics criterion
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.AdamW(
             self.parameters(), 
             lr=LR_params['eta'],
             weight_decay=GD_params['lam'],
         )
-        # self.optimizer = optim.SGD(
-        #     self.parameters(), 
-        #     lr=LR_params['etas'][0],
-        #     momentum=0.9,
-        #     weight_decay=GD_params['lam']
-        # )
         
+        # Loaders
         self.trainloader, self.testloader, self.classes = loadData(batch_size=GD_params['n_batch'])
         train_dataset, val_dataset = random_split(
             self.trainloader.dataset, [train_size, val_size],
@@ -85,6 +125,25 @@ class Network(nn.Module):
         # Apply maxpooling layer
         x = self.pool1(x)
         # ========================
+        # VGG Block-2
+        x = self.conv3(x)
+        x = F.relu(x)
+        
+        x = self.conv4(x)
+        x = F.relu(x)
+        
+        # Apply maxpooling layer
+        x = self.pool2(x)
+        # ========================
+        # VGG Block-3
+        x = self.conv5(x)
+        x = F.relu(x)
+        
+        x = self.conv6(x)
+        x = F.relu(x)
+        # Removed pooling in last layer as per instructions
+        # ========================
+
 
         # Flattening (to connect to fc1 layer)
         x = x.view(x.size(0), -1)
@@ -140,7 +199,7 @@ class Network(nn.Module):
             running_loss = 0.0
             batch_count = 0
             
-            for i, (inputs, labels) in enumerate(self.trainloader, 0):
+            for _i, (inputs, labels) in enumerate(self.trainloader, 0):
                 self.optimizer.zero_grad()
 
                 outputs = self(inputs)
