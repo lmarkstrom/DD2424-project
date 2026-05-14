@@ -37,6 +37,7 @@ class Network(nn.Module):
             kernel_size=CN_params['l_patchify']['f'],
             stride=CN_params['l_patchify']['s'],
         )
+        self.bn_patch = nn.BatchNorm2d(CN_params['l_patchify']['n_f'])
         # ========================
         
         # ========================
@@ -47,12 +48,16 @@ class Network(nn.Module):
             kernel_size=CN_params['l_vgg1']['f'], 
             stride=CN_params['l_vgg1']['s'], 
             padding='same')
+        self.bn1 = nn.BatchNorm2d(CN_params['l_vgg1']['n_f'])
+        
         self.conv2 = nn.Conv2d(
             in_channels=CN_params['l_vgg1']['n_f'], 
             out_channels=CN_params['l_vgg1']['n_f'], 
             kernel_size=CN_params['l_vgg1']['f'], 
             stride=CN_params['l_vgg1']['s'], 
             padding='same')
+        self.bn2 = nn.BatchNorm2d(CN_params['l_vgg1']['n_f'])
+        
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
         # ========================
 
@@ -64,12 +69,16 @@ class Network(nn.Module):
             kernel_size=CN_params['l_vgg2']['f'], 
             stride=CN_params['l_vgg2']['s'], 
             padding='same')
+        self.bn3 = nn.BatchNorm2d(CN_params['l_vgg2']['n_f'])
+        
         self.conv4 = nn.Conv2d(
             in_channels=(CN_params['l_vgg2']['n_f']), 
             out_channels=CN_params['l_vgg2']['n_f'], 
             kernel_size=CN_params['l_vgg2']['f'], 
             stride=CN_params['l_vgg2']['s'], 
             padding='same')
+        self.bn4 = nn.BatchNorm2d(CN_params['l_vgg2']['n_f'])
+        
         self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
         # ========================
 
@@ -81,22 +90,29 @@ class Network(nn.Module):
             kernel_size=CN_params['l_vgg3']['f'], 
             stride=CN_params['l_vgg3']['s'], 
             padding='same')
+        self.bn5 = nn.BatchNorm2d(CN_params['l_vgg3']['n_f'])
+        
         self.conv6 = nn.Conv2d(
             in_channels=CN_params['l_vgg3']['n_f'], 
             out_channels=CN_params['l_vgg3']['n_f'], 
             kernel_size=CN_params['l_vgg3']['f'], 
             stride=CN_params['l_vgg3']['s'], 
             padding='same')
+        self.bn6 = nn.BatchNorm2d(CN_params['l_vgg3']['n_f'])
         # ========================
 
+        # ========================
+        # Linear layers
+        self.fc1 = nn.Linear(in_features=CN_params['l_fc1']['in'], out_features=CN_params['l_fc1']['out'])
+        self.bn_fc1 = nn.BatchNorm1d(CN_params['l_fc1']['out'])
+        
+        self.fc2 = nn.Linear(CN_params['l_fc2']['in'], CN_params['l_fc2']['out'])
+        # ========================
+         
         # =======================
         # Dropout
         self.dropout = nn.Dropout(RE_params["dropout_rate"])
         # ========================
-        # Linear layers
-        self.fc1 = nn.Linear(in_features=CN_params['l_fc1']['in'], out_features=CN_params['l_fc1']['out'])
-        self.fc2 = nn.Linear(CN_params['l_fc2']['in'], CN_params['l_fc2']['out'])
-         # ========================
 
         # ========================
         # Optimizers and metrics criterion
@@ -130,33 +146,36 @@ class Network(nn.Module):
             self.trainloader.dataset, [train_size, val_size],
             generator=torch.Generator().manual_seed(42)
         )
-        self.trainloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-        self.valloader = DataLoader(val_dataset, batch_size=32, shuffle=False)
+        self.trainloader = DataLoader(train_dataset, batch_size=self.GD_params['n_batch'], shuffle=True)
+        self.valloader = DataLoader(val_dataset, batch_size=self.GD_params['n_batch'], shuffle=False)
         # ========================
 
     def forward(self, x):
         x = self.patchify(x)
+        x = self.bn_patch(x)
         x = F.relu(x)
         
         # ========================
         # VGG Block-1
         x = self.conv1(x)
+        x = self.bn1(x)
         x = F.relu(x)
         
         x = self.conv2(x)
+        x = self.bn2(x)
         x = F.relu(x)
         
-        # Apply maxpooling layer
         x = self.pool1(x)
-
         x = self.dropout(x)
         # ========================
         # ========================
         # VGG Block-2
         x = self.conv3(x)
+        x = self.bn3(x)
         x = F.relu(x)
         
         x = self.conv4(x)
+        x = self.bn4(x)
         x = F.relu(x)
         
         # Apply maxpooling layer
@@ -166,20 +185,25 @@ class Network(nn.Module):
         # ========================
         # VGG Block-3
         x = self.conv5(x)
+        x = self.bn5(x)
         x = F.relu(x)
         
         x = self.conv6(x)
+        x = self.bn6(x)
         x = F.relu(x)
+        
+        x = self.dropout(x)
         # Removed pooling in last layer as per instructions
         # ========================
 
-        x = self.dropout(x)
         # Flattening (to connect to fc1 layer)
         x = x.view(x.size(0), -1)
 
         # Run through fc1
         x = self.fc1(x)
+        x = self.bn_fc1(x)
         x = F.relu(x)
+        
         x = self.dropout(x)
         # fc2 layer
         x = self.fc2(x)

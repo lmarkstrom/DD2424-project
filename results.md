@@ -76,6 +76,9 @@ Extension of initial model with the addition of a single VGG layer, with filter 
 | :--- | :--- | :--- | :--- |
 | Image Mirror and shifting |  76.59 | 50% | 0.1 |
 
+### Combined
+
+**Accuracy:** 74.51%
 
 # Combined Regularization Techniques and Normalization
 Added batch normalization after each convolutional layer and the first fully connected layer.
@@ -83,11 +86,9 @@ Added batch normalization after each convolutional layer and the first fully con
 Different combinations of previously seen best results:
 | Model | Performance | Lambda | Dropout | Image Mirror | Image Shift |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Combined 1** | x% | x | x | x | x | 
-| **Combined 2** | x% | x | x | x | x |
-| **Combined 3** | x% | x | x | x | x |
-| **Combined 4** | x% | x | x | x | x |
-| **Combined 5** | x% | x | x | x | x |
+| **Combined 1** | 82.89% | 0.0001 | 0.2 | 0.5| +/- 0.1 |
+| **Combined 2** | 83.10% | 0.001 | 0.2 | 0.5| +/- 0.1 | 
+| **Combined 2** | x% | 0.001 | 0.2 | 0.5| +/- 0.1 | 
 
 # Todo
 Add batch normalization.
