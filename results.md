@@ -80,7 +80,7 @@ Extension of initial model with the addition of a single VGG layer, with filter 
 
 **Accuracy:** 74.51%
 
-# Combined Regularization Techniques and Normalization
+## Combined Regularization Techniques and Normalization
 Added batch normalization after each convolutional layer and the first fully connected layer.
 
 Different combinations of previously seen best results:
@@ -93,12 +93,21 @@ Different combinations of previously seen best results:
 | **Combined 5** | 85.85% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 5 (45 epoch, 0.01 lr)
 | **Combined 6** | 86.74% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 6 (60 epoch, 0.01 lr)
 | **Combined 7** | 83.85% | 0.01 | 0.2 | 0.5| +/- 0.1 | longmodel 7 (60 epoch, 0.01 lr)
-| **Combined 8** | 86.48% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 8 (60 epoch, 0.001 lr) [0.3, 0.4, 0.5, 0.5]
-| **Combined 9** | x% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 9 (60 epoch, 0.001 lr) [0.2, 0.3, 0.4, 0.5], randomcrop(4)
+| **Combined 8** | 86.48% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 8 (60 epoch, 0.01 lr) Higher dropout, crop
+| **Combined 9** | 86.68% | 0.0001 | 0.2 | 0.5| +/- 0.1 | longmodel 9 (80 epoch, 0.01 lr) Higher dropout, crop
+| **Combined 10** | 86.98% | 0.0001 | 0.2 | 0.5| +/- 0.1 | longmodel 9 (60 epoch, 0.01 lr) corrected augmentation
+| **Combined 10** | 86.98% | 0.0001 | 0.2 | 0.5| +/- 0.1 | longmodel 9 (60 epoch, 0.01 lr) lower lambda
 
-# Todo
-Add batch normalization.
+## Further improvements
 
-Add label smoothening.
+### Label smoothing
+| Model | Performance | Epochs | Lambda | lr | label smoothing |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Model 1** | 86.71% | 80 | 0.001 | 0.01 | 0.1 |
 
-Early stopping?
+### Learning rate scheduling
+| Model | Performance | Epochs | Lambda | lr |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Step** | 86.71% | 80 | 0.001 | 0.01 |
+
+###

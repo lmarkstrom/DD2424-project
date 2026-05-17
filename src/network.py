@@ -140,12 +140,12 @@ class Network(nn.Module):
         # Augementations
         self.augementation = None
         if RE_params['augementation']:
-            max_shift = RE_params['shift_max'] / GD_params['img_size']
             self.augementation = transforms.Compose([
-                # transforms.RandomHorizontalFlip(p=self.RE_params['flip_prob']),
+                transforms.RandomHorizontalFlip(p=self.RE_params['flip_prob']),
+                
                 transforms.RandomCrop(32, padding=4),
                 
-                transforms.RandomAffine(degrees=0, translate=(max_shift, max_shift)),
+                # transforms.RandomAffine(degrees=0, translate=(max_shift, max_shift)),
                 
                 transforms.ToTensor(),
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
@@ -273,6 +273,20 @@ class Network(nn.Module):
         if plot:
             steps = 0
             results = {'loss': [], 'val_loss': [], 'acc': [], 'val_acc': [], 'steps': []}
+            
+        if self.LR_params['scheduler']:
+            if self.LR_params['scheduler_type'] == "step":
+                self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, 
+                                                           step_size=30, 
+                                                           gamma=0.1)
+            elif self.LR_params['scheduler_type'] == "cosine":
+                self.scheduler = optim.lr_scheduler.OneCycleLR(self.optimizer, 
+                                                               max_lr=0.01,
+                                                               steps_per_epoch=len(self.trainloader),
+                                                               anneal_strategy='cos',
+                                                               epochs=n_epochs)
+            else:
+                raise ValueError(f"Unsupported scheduler type: {self.LR_params['scheduler_type']}")
         
         for epoch in range(n_epochs):
             self.train()
@@ -295,6 +309,12 @@ class Network(nn.Module):
                 running_total += labels.size(0)
                 running_correct += (predicted == labels).sum().item()
                 batch_count += 1
+                
+                if self.LR_params['scheduler'] and self.LR_params['scheduler_type'] == "cosine":
+                    self.scheduler.step()
+                
+            if self.LR_params['scheduler'] and self.LR_params['scheduler_type'] == "step":
+                self.scheduler.step()
                 
             avg_loss = running_loss / batch_count
             train_accuracy = running_correct / running_total
