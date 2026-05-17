@@ -21,7 +21,7 @@ def trainNet():
     LR_params = {
         'eta': 1e-2,
         'scheduler': True,
-        'scheduler_type': "step"} # "step", "cosine", ...
+        'scheduler_type': "cosine"} # "step", "cosine", ...
     RE_params = {
         'dropout': True, 'dropout_rates': [0.3, 0.4, 0.5, 0.5], 
         'augementation': True, 'flip_prob': 0.5, 'shift_max': 0.1,

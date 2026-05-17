@@ -103,11 +103,12 @@ Different combinations of previously seen best results:
 ### Label smoothing
 | Model | Performance | Epochs | Lambda | lr | label smoothing |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Model 1** | 87.23% | 80 | 0.001 | 0.01 | 0.1 |
+| **Model 1** | 87.23% | 60 | 0.001 | 0.01 | 0.1 |
 
 ### Learning rate scheduling
 | Model | Performance | Epochs | Lambda | lr |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Step** | -% | 80 | 0.001 | 0.01 |
+| **Step** | 88.39% | 60 | 0.001 | 0.01 |
+| **Step** | 89.46% | 60 | 0.001 | 0.01 |
 
 ###
