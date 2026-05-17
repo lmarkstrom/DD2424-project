@@ -115,7 +115,7 @@ Different combinations of previously seen best results:
 
 | Model | Performance | Epochs | Lambda | lr |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Step** | x% | 60 | 0.001 | 0.01 |
+| **Step** | 85.58% | 60 | 0.001 | 0.01 |
 
 ### Replace fc1 with average pooling
 

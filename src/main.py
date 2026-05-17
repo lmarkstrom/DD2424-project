@@ -15,7 +15,7 @@ def trainNet():
         'l_vgg1': {'f': 3, 's': 1, 'n_f': 64},
         'l_vgg2': {'f': 3, 's': 1, 'n_f': 128},
         'l_vgg3': {'f': 3, 's': 1, 'n_f': 256},
-        'l_fc1': {'in': 256 * 4 * 4, 'out': GD_params['n_hidden']},
+        'l_fc1': {'in': 256 * 2 * 2, 'out': GD_params['n_hidden']},
         'l_fc2': {'in': GD_params['n_hidden'], 'out': GD_params['k']}
     }
     LR_params = {
