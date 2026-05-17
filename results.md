@@ -111,4 +111,15 @@ Different combinations of previously seen best results:
 | **Step** | 88.39% | 60 | 0.001 | 0.01 |
 | **Step** | 89.46% | 60 | 0.001 | 0.01 |
 
-###
+### Down sampling
+
+| Model | Performance | Epochs | Lambda | lr |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Step** | x% | 60 | 0.001 | 0.01 |
+
+### Replace fc1 with average pooling
+
+| Model | Performance | Epochs | Lambda | lr |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Step** | 86.97% | 60 | 0.001 | 0.01 |
+

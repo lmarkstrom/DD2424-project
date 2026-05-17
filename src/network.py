@@ -98,15 +98,16 @@ class Network(nn.Module):
             kernel_size=CN_params['l_vgg3']['f'], 
             stride=CN_params['l_vgg3']['s'], 
             padding='same')
+        self.gap = nn.AdaptiveAvgPool2d((1, 1))
         self.bn6 = nn.BatchNorm2d(CN_params['l_vgg3']['n_f'])
         # ========================
 
         # ========================
         # Linear layers
-        self.fc1 = nn.Linear(in_features=CN_params['l_fc1']['in'], out_features=CN_params['l_fc1']['out'])
-        self.bn_fc1 = nn.BatchNorm1d(CN_params['l_fc1']['out'])
+        # self.fc1 = nn.Linear(in_features=CN_params['l_fc1']['in'], out_features=CN_params['l_fc1']['out'])
+        # self.bn_fc1 = nn.BatchNorm1d(CN_params['l_fc1']['out'])
         
-        self.fc2 = nn.Linear(CN_params['l_fc2']['in'], CN_params['l_fc2']['out'])
+        self.fc2 = nn.Linear(256, CN_params['l_fc2']['out'])
         # ========================
          
         # =======================
@@ -129,11 +130,6 @@ class Network(nn.Module):
             lr=LR_params['eta'],
             weight_decay=GD_params['lam'],
         )
-        # self.optimizer = optim.SGD(
-        #     self.parameters(), 
-        #     lr=0.001, 
-        #     momentum=0.9
-        # )
         # ========================
         
         # ========================
@@ -218,14 +214,16 @@ class Network(nn.Module):
             x = self.dropout3(x)
         # Removed pooling in last layer as per instructions
         # ========================
+        
+        x = self.gap(x)
 
         # Flattening (to connect to fc1 layer)
         x = x.view(x.size(0), -1)
 
         # Run through fc1
-        x = self.fc1(x)
-        x = self.bn_fc1(x)
-        x = F.relu(x)
+        # x = self.fc1(x)
+        # x = self.bn_fc1(x)
+        # x = F.relu(x)
         
         if self.dropout:
             x = self.dropout4(x)
