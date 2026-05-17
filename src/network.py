@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, Subset, random_split
 import numpy as np
 from torchvision import transforms
 
@@ -112,6 +112,10 @@ class Network(nn.Module):
         # =======================
         # Dropout
         self.dropout = nn.Dropout(RE_params["dropout_rate"])
+        self.dropout1 = nn.Dropout(RE_params["dropout_rates"][0])
+        self.dropout2 = nn.Dropout(RE_params["dropout_rates"][1])
+        self.dropout3 = nn.Dropout(RE_params["dropout_rates"][2])
+        self.dropout4 = nn.Dropout(RE_params["dropout_rates"][3])
         # ========================
 
         # ========================
@@ -122,6 +126,11 @@ class Network(nn.Module):
             lr=LR_params['eta'],
             weight_decay=GD_params['lam'],
         )
+        # self.optimizer = optim.SGD(
+        #     self.parameters(), 
+        #     lr=0.001, 
+        #     momentum=0.9
+        # )
         # ========================
         
         # ========================
@@ -130,7 +139,8 @@ class Network(nn.Module):
         if RE_params['augementation']:
             max_shift = RE_params['shift_max'] / GD_params['img_size']
             self.augementation = transforms.Compose([
-                transforms.RandomHorizontalFlip(p=self.RE_params['flip_prob']),
+                # transforms.RandomHorizontalFlip(p=self.RE_params['flip_prob']),
+                transforms.RandomCrop(32, padding=4),
                 
                 transforms.RandomAffine(degrees=0, translate=(max_shift, max_shift)),
                 
@@ -141,11 +151,18 @@ class Network(nn.Module):
         
         # ========================
         # Loaders
-        self.trainloader, self.testloader, self.classes = loadData(batch_size=GD_params['n_batch'], augmentations=self.augementation)
-        train_dataset, val_dataset = random_split(
-            self.trainloader.dataset, [train_size, val_size],
-            generator=torch.Generator().manual_seed(42)
-        )
+        self.trainset_augmented, self.trainset_original, self.testloader, self.classes = loadData(batch_size=GD_params['n_batch'], train_transform=self.augementation)
+        total_size = len(self.trainset_augmented)
+        indices = torch.randperm(total_size, generator=torch.Generator().manual_seed(42)).tolist()
+
+        train_indices = indices[:train_size]
+        val_indices = indices[train_size : train_size + val_size]
+
+        # Use clean and augmented datasets
+        train_dataset = Subset(self.trainset_augmented, train_indices)
+        val_dataset = Subset(self.trainset_original, val_indices)
+
+        # DataLoaders
         self.trainloader = DataLoader(train_dataset, batch_size=self.GD_params['n_batch'], shuffle=True)
         self.valloader = DataLoader(val_dataset, batch_size=self.GD_params['n_batch'], shuffle=False)
         # ========================
@@ -166,7 +183,7 @@ class Network(nn.Module):
         x = F.relu(x)
         
         x = self.pool1(x)
-        x = self.dropout(x)
+        x = self.dropout1(x)
         # ========================
         # ========================
         # VGG Block-2
@@ -180,7 +197,7 @@ class Network(nn.Module):
         
         # Apply maxpooling layer
         x = self.pool2(x)
-        x = self.dropout(x)
+        x = self.dropout2(x)
         # ========================
         # ========================
         # VGG Block-3
@@ -192,7 +209,7 @@ class Network(nn.Module):
         x = self.bn6(x)
         x = F.relu(x)
         
-        x = self.dropout(x)
+        x = self.dropout3(x)
         # Removed pooling in last layer as per instructions
         # ========================
 
@@ -204,7 +221,7 @@ class Network(nn.Module):
         x = self.bn_fc1(x)
         x = F.relu(x)
         
-        x = self.dropout(x)
+        x = self.dropout4(x)
         # fc2 layer
         x = self.fc2(x)
 
@@ -241,9 +258,8 @@ class Network(nn.Module):
         """
         Train model using CLR with increasing cycle lengths
         """
-        self.train()
+        
         n_epochs = self.GD_params['n_epochs']
-
         loss_delta = np.inf
         val_loss_prev = np.inf
         
@@ -252,35 +268,45 @@ class Network(nn.Module):
             results = {'loss': [], 'val_loss': [], 'acc': [], 'val_acc': [], 'steps': []}
         
         for epoch in range(n_epochs):
+            self.train()
+            
             running_loss = 0.0
             batch_count = 0
+            running_correct = 0
+            running_total = 0
             
-            for _i, (inputs, labels) in enumerate(self.trainloader, 0):
+            for (inputs, labels) in self.trainloader:
                 self.optimizer.zero_grad()
 
                 outputs = self(inputs)
                 loss = self.criterion(outputs, labels)
                 loss.backward()
                 self.optimizer.step()
-                # self.scheduler.step()
                 
                 running_loss += loss.item()
+                _, predicted = torch.max(outputs.data, 1)
+                running_total += labels.size(0)
+                running_correct += (predicted == labels).sum().item()
                 batch_count += 1
+                
+            avg_loss = running_loss / batch_count
+            train_accuracy = running_correct / running_total
 
-            if debug:
-                avg_loss = running_loss / batch_count
+            if debug or plot:
                 val_accuracy, val_loss = self.evaluate(self.valloader)
+                
+            if debug:    
                 loss_delta_new = val_loss - avg_loss
                 if loss_delta_new > loss_delta and val_loss_prev < val_loss:
                     print(f"Maybe starting to overfit?: Train loss: {avg_loss:.4f} Val loss: {val_loss:.4f}, diff: {loss_delta_new:.4f}")
                 loss_delta = loss_delta_new
                 val_loss_prev = val_loss
 
-                print(f'Epoch {epoch+1}/{n_epochs} | Loss: {avg_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_accuracy:.4f}')
+                print(f'Epoch {epoch+1}/{n_epochs} | Loss: {avg_loss:.4f} | Val Loss: {val_loss:.4f} | Acc: {train_accuracy:.4f} | Val Acc: {val_accuracy:.4f}')
             if plot:
                 results['loss'].append(avg_loss)
                 results['val_loss'].append(val_loss)
-                results['acc'].append(self.evaluate(self.trainloader)[0])
+                results['acc'].append(train_accuracy)
                 results['val_acc'].append(val_accuracy)
                 results['steps'].append(steps)
                 steps += 1

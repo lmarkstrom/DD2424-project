@@ -88,7 +88,12 @@ Different combinations of previously seen best results:
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Combined 1** | 82.89% | 0.0001 | 0.2 | 0.5| +/- 0.1 |
 | **Combined 2** | 83.10% | 0.001 | 0.2 | 0.5| +/- 0.1 | 
-| **Combined 2** | x% | 0.001 | 0.2 | 0.5| +/- 0.1 | 
+| **Combined 3** | 85.66% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 3 (30 epoch, 0.001 lr)
+| **Combined 4** | 85.63% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 4 (35 epoch, 0.01 lr)
+| **Combined 5** | 85.85% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 5 (45 epoch, 0.01 lr)
+| **Combined 6** | 86.74% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 6 (60 epoch, 0.01 lr)
+| **Combined 7** | 83.85% | 0.01 | 0.2 | 0.5| +/- 0.1 | longmodel 7 (60 epoch, 0.01 lr)
+| **Combined 8** | 86.48% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 8 (60 epoch, 0.001 lr) [0.3, 0.4, 0.5, 0.5], randomcrop(4)
 
 # Todo
 Add batch normalization.
