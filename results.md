@@ -95,19 +95,19 @@ Different combinations of previously seen best results:
 | **Combined 7** | 83.85% | 0.01 | 0.2 | 0.5| +/- 0.1 | longmodel 7 (60 epoch, 0.01 lr)
 | **Combined 8** | 86.48% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 8 (60 epoch, 0.01 lr) Higher dropout, crop
 | **Combined 9** | 86.68% | 0.0001 | 0.2 | 0.5| +/- 0.1 | longmodel 9 (80 epoch, 0.01 lr) Higher dropout, crop
-| **Combined 10** | 86.98% | 0.0001 | 0.2 | 0.5| +/- 0.1 | longmodel 9 (60 epoch, 0.01 lr) corrected augmentation
-| **Combined 10** | 86.98% | 0.0001 | 0.2 | 0.5| +/- 0.1 | longmodel 9 (60 epoch, 0.01 lr) lower lambda
+| **Combined 10** | 86.98% | 0.0001 | 0.2 | 0.5| +/- 0.1 | longmodel 10 (60 epoch, 0.01 lr) corrected augmentation - FINAL
+| **Combined 11** | 86.80% | 0.0001 | 0.2 | 0.5| +/- 0.1 | longmodel 11 (60 epoch, 0.01 lr) lower droput
 
 ## Further improvements
 
 ### Label smoothing
 | Model | Performance | Epochs | Lambda | lr | label smoothing |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Model 1** | 86.71% | 80 | 0.001 | 0.01 | 0.1 |
+| **Model 1** | 87.23% | 80 | 0.001 | 0.01 | 0.1 |
 
 ### Learning rate scheduling
 | Model | Performance | Epochs | Lambda | lr |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Step** | 86.71% | 80 | 0.001 | 0.01 |
+| **Step** | -% | 80 | 0.001 | 0.01 |
 
 ###
