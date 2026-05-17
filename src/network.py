@@ -111,7 +111,7 @@ class Network(nn.Module):
          
         # =======================
         # Dropout
-        self.dropout = nn.Dropout(RE_params["dropout_rate"])
+        self.dropout = nn.Dropout(RE_params["dropout"])
         self.dropout1 = nn.Dropout(RE_params["dropout_rates"][0])
         self.dropout2 = nn.Dropout(RE_params["dropout_rates"][1])
         self.dropout3 = nn.Dropout(RE_params["dropout_rates"][2])
@@ -186,7 +186,8 @@ class Network(nn.Module):
         x = F.relu(x)
         
         x = self.pool1(x)
-        x = self.dropout1(x)
+        if self.dropout:
+            x = self.dropout1(x)
         # ========================
         # ========================
         # VGG Block-2
@@ -200,7 +201,8 @@ class Network(nn.Module):
         
         # Apply maxpooling layer
         x = self.pool2(x)
-        x = self.dropout2(x)
+        if self.dropout:
+            x = self.dropout2(x)
         # ========================
         # ========================
         # VGG Block-3
@@ -212,7 +214,8 @@ class Network(nn.Module):
         x = self.bn6(x)
         x = F.relu(x)
         
-        x = self.dropout3(x)
+        if self.dropout:
+            x = self.dropout3(x)
         # Removed pooling in last layer as per instructions
         # ========================
 
@@ -224,7 +227,8 @@ class Network(nn.Module):
         x = self.bn_fc1(x)
         x = F.relu(x)
         
-        x = self.dropout4(x)
+        if self.dropout:
+            x = self.dropout4(x)
         # fc2 layer
         x = self.fc2(x)
 

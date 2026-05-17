@@ -10,7 +10,7 @@ warnings.simplefilter("ignore")
 
 def trainNet():
     CN_params = {'f': 4, 'n_f': 40, 'n_s': 800}
-    GD_params = {'n_cycles': 1, 'n_epochs': 60, 'n_hidden': 300, 'k': 10, 'n_batch': 100, 'img_size': 32, 'lam': 0.001}
+    GD_params = {'n_cycles': 1, 'n_epochs': 80, 'n_hidden': 300, 'k': 10, 'n_batch': 100, 'img_size': 32, 'lam': 0.001}
     CN_params = {
         'l_patchify': {'f': 2, 's': 2, 'n_f': 64},
         'l_vgg1': {'f': 3, 's': 1, 'n_f': 64},
@@ -21,9 +21,9 @@ def trainNet():
     }
     LR_params = {'eta': 1e-2, 'etas': [1e-7, 1e-3]}
     RE_params = {
-        'dropout_rate': 0.2, 'dropout_rates': [0.2, 0.3, 0.4, 0.5], 
+        'dropout': True, 'dropout_rates': [0.3, 0.4, 0.5, 0.5], 
         'augementation': True, 'flip_prob': 0.5, 'shift_max': 0.1,
-        'label_smoothing': True, 'smoothing_factor': 0.1}
+        'label_smoothing': False, 'smoothing_factor': 0.1}
     
     network = Network(LR_params, GD_params, CN_params, RE_params)
     network.trainModel(plot=True)
