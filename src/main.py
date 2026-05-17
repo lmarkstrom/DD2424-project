@@ -20,7 +20,10 @@ def trainNet():
         'l_fc2': {'in': GD_params['n_hidden'], 'out': GD_params['k']}
     }
     LR_params = {'eta': 1e-2, 'etas': [1e-7, 1e-3]}
-    RE_params = {'dropout_rate': 0.2, 'dropout_rates': [0.3, 0.4, 0.5, 0.5], 'augementation': True, 'flip_prob': 0.5, 'shift_max': 0.1}
+    RE_params = {
+        'dropout_rate': 0.2, 'dropout_rates': [0.2, 0.3, 0.4, 0.5], 
+        'augementation': True, 'flip_prob': 0.5, 'shift_max': 0.1,
+        'label_smoothing': True, 'smoothing_factor': 0.1}
     
     network = Network(LR_params, GD_params, CN_params, RE_params)
     network.trainModel(plot=True)

@@ -120,7 +120,10 @@ class Network(nn.Module):
 
         # ========================
         # Optimizers and metrics criterion
-        self.criterion = nn.CrossEntropyLoss()
+        if self.RE_params['label_smoothing']:
+            self.criterion = nn.CrossEntropyLoss(label_smoothing=self.RE_params['smoothing_factor'])
+        else:
+            self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.AdamW(
             self.parameters(), 
             lr=LR_params['eta'],
