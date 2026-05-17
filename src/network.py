@@ -54,12 +54,11 @@ class Network(nn.Module):
             in_channels=CN_params['l_vgg1']['n_f'], 
             out_channels=CN_params['l_vgg1']['n_f'], 
             kernel_size=CN_params['l_vgg1']['f'], 
-            stride=2, 
-            padding=1
-            )
+            stride=CN_params['l_vgg1']['s'], 
+            padding='same')
         self.bn2 = nn.BatchNorm2d(CN_params['l_vgg1']['n_f'])
         
-        # self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
         # ========================
 
         # ========================
@@ -76,12 +75,11 @@ class Network(nn.Module):
             in_channels=(CN_params['l_vgg2']['n_f']), 
             out_channels=CN_params['l_vgg2']['n_f'], 
             kernel_size=CN_params['l_vgg2']['f'], 
-            stride=2, 
-            padding=1
-            )
+            stride=CN_params['l_vgg2']['s'], 
+            padding='same')
         self.bn4 = nn.BatchNorm2d(CN_params['l_vgg2']['n_f'])
         
-        # self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
         # ========================
 
         # ========================
@@ -98,19 +96,18 @@ class Network(nn.Module):
             in_channels=CN_params['l_vgg3']['n_f'], 
             out_channels=CN_params['l_vgg3']['n_f'], 
             kernel_size=CN_params['l_vgg3']['f'], 
-            stride=2,
-            padding=1
-            )
-        # self.gap = nn.AdaptiveAvgPool2d((1, 1))
+            stride=CN_params['l_vgg3']['s'], 
+            padding='same')
+        self.gap = nn.AdaptiveAvgPool2d((1, 1))
         self.bn6 = nn.BatchNorm2d(CN_params['l_vgg3']['n_f'])
         # ========================
 
         # ========================
         # Linear layers
-        self.fc1 = nn.Linear(in_features=CN_params['l_fc1']['in'], out_features=CN_params['l_fc1']['out'])
-        self.bn_fc1 = nn.BatchNorm1d(CN_params['l_fc1']['out'])
+        # self.fc1 = nn.Linear(in_features=CN_params['l_fc1']['in'], out_features=CN_params['l_fc1']['out'])
+        # self.bn_fc1 = nn.BatchNorm1d(CN_params['l_fc1']['out'])
         
-        self.fc2 = nn.Linear(CN_params['l_fc2']['in'], CN_params['l_fc2']['out'])
+        self.fc2 = nn.Linear(256, CN_params['l_fc2']['out'])
         # ========================
          
         # =======================
@@ -184,7 +181,7 @@ class Network(nn.Module):
         x = self.bn2(x)
         x = F.relu(x)
         
-        # x = self.pool1(x)
+        x = self.pool1(x)
         if self.dropout:
             x = self.dropout1(x)
         # ========================
@@ -199,7 +196,7 @@ class Network(nn.Module):
         x = F.relu(x)
         
         # Apply maxpooling layer
-        # x = self.pool2(x)
+        x = self.pool2(x)
         if self.dropout:
             x = self.dropout2(x)
         # ========================
@@ -218,15 +215,15 @@ class Network(nn.Module):
         # Removed pooling in last layer as per instructions
         # ========================
         
-        # x = self.gap(x)
+        x = self.gap(x)
 
         # Flattening (to connect to fc1 layer)
         x = x.view(x.size(0), -1)
 
         # Run through fc1
-        x = self.fc1(x)
-        x = self.bn_fc1(x)
-        x = F.relu(x)
+        # x = self.fc1(x)
+        # x = self.bn_fc1(x)
+        # x = F.relu(x)
         
         if self.dropout:
             x = self.dropout4(x)

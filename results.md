@@ -109,17 +109,22 @@ Different combinations of previously seen best results:
 | Model | Performance | Epochs | Lambda | lr |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Step** | 88.39% | 60 | 0.001 | 0.01 |
-| **Step** | 89.46% | 60 | 0.001 | 0.01 |
+| **Cosin** | 89.46% | 60 | 0.001 | 0.01 |
 
 ### Down sampling
 
 | Model | Performance | Epochs | Lambda | lr |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Step** | 85.58% | 60 | 0.001 | 0.01 |
+| **Model** | 85.58% | 60 | 0.001 | 0.01 |
 
 ### Replace fc1 with average pooling
 
 | Model | Performance | Epochs | Lambda | lr |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Step** | 86.97% | 60 | 0.001 | 0.01 |
+| **Model** | 86.97% | 60 | 0.001 | 0.01 |
 
+## Final model (E-level)
+
+| Model | Performance | Epochs | Lambda | lr |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Model** | 89.21% | 60 | 0.0001 | 0.01 |

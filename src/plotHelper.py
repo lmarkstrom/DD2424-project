@@ -18,7 +18,7 @@ def plotPerformance(results):
     plt.subplot(1, 2, 2)
     plt.plot(x_axis, acc, label='Training Accuracy')
     plt.plot(x_axis, val_acc, label='Validation Accuracy')
-    plt.xlabel('Update step', fontsize=14)
+    plt.xlabel('Epochs', fontsize=14)
     plt.ylabel('Accuracy', fontsize=14)
     plt.title('Accuracy', fontsize=18)
     plt.legend(fontsize=14)
