@@ -104,11 +104,7 @@ class Network(nn.Module):
 
         # ========================
         # Linear layers
-        # self.fc1 = nn.Linear(in_features=CN_params['l_fc1']['in'], out_features=CN_params['l_fc1']['out'])
-        # self.bn_fc1 = nn.BatchNorm1d(CN_params['l_fc1']['out'])
-        
-        # self.fc2 = nn.Linear(CN_params['l_fc2']['in'], CN_params['l_fc2']['out'])
-        self.fc2 = nn.Linear(256, CN_params['l_fc2']['out'])
+        self.fc2 = nn.Linear(CN_params['l_fc2']['in'], CN_params['l_fc2']['out'])
         # ========================
          
         # =======================
@@ -218,13 +214,8 @@ class Network(nn.Module):
         
         x = self.gap(x)
 
-        # Flattening (to connect to fc1 layer)
+        # Flattening (to connect to fc layer)
         x = x.view(x.size(0), -1)
-
-        # Run through fc1
-        # x = self.fc1(x)
-        # x = self.bn_fc1(x)
-        # x = F.relu(x)
         
         if self.dropout:
             x = self.dropout4(x)

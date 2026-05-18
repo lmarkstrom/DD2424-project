@@ -129,4 +129,25 @@ Different combinations of previously seen best results:
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Model 1** | 89.21% | 60 | 0.0001 | 0.01 |
 | **Model 2** | 89.20% | 60 | 0.001 | 0.01 | # without average pooling
-| **Model 3** | x% | 60 | 0.0001 | 0.01 | # try lower dropout (or lambda)
+| **Model 3** | 90.20% | 60 | 0.0001 | 0.01 | # try lower dropout and lambda
+
+### Final parameters
+```python
+    CN_params = {'f': 4, 'n_f': 40, 'n_s': 800}
+    GD_params = {'n_cycles': 1, 'n_epochs': 60, 'n_hidden': 300, 'k': 10, 'n_batch': 100, 'img_size': 32, 'lam': 0.0001}
+    CN_params = {
+        'l_patchify': {'f': 2, 's': 2, 'n_f': 64},
+        'l_vgg1': {'f': 3, 's': 1, 'n_f': 64},
+        'l_vgg2': {'f': 3, 's': 1, 'n_f': 128},
+        'l_vgg3': {'f': 3, 's': 1, 'n_f': 256},
+        'l_fc2': {'in': 256, 'out': GD_params['k']}
+    }
+    LR_params = {
+        'eta': 1e-2,
+        'scheduler': True,
+        'scheduler_type': "cosine"} # "step", "cosine", ...
+    RE_params = {
+        'dropout': True, 'dropout_rates': [0.3, 0.4, 0.5, 0.5], 
+        'augementation': True, 'flip_prob': 0.5, 'shift_max': 0.1,
+        'label_smoothing': True, 'smoothing_factor': 0.1}
+```
