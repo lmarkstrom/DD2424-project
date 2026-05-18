@@ -94,9 +94,9 @@ Different combinations of previously seen best results:
 | **Combined 6** | 86.74% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 6 (60 epoch, 0.01 lr)
 | **Combined 7** | 83.85% | 0.01 | 0.2 | 0.5| +/- 0.1 | longmodel 7 (60 epoch, 0.01 lr)
 | **Combined 8** | 86.48% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 8 (60 epoch, 0.01 lr) Higher dropout, crop
-| **Combined 9** | 86.68% | 0.0001 | 0.2 | 0.5| +/- 0.1 | longmodel 9 (80 epoch, 0.01 lr) Higher dropout, crop
-| **Combined 10** | 86.98% | 0.0001 | 0.2 | 0.5| +/- 0.1 | longmodel 10 (60 epoch, 0.01 lr) corrected augmentation - FINAL
-| **Combined 11** | 86.80% | 0.0001 | 0.2 | 0.5| +/- 0.1 | longmodel 11 (60 epoch, 0.01 lr) lower droput
+| **Combined 9** | 86.68% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 9 (80 epoch, 0.01 lr) Higher dropout, crop
+| **Combined 10** | 86.98% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 10 (60 epoch, 0.01 lr) corrected augmentation - FINAL
+| **Combined 11** | 86.80% | 0.001 | 0.2 | 0.5| +/- 0.1 | longmodel 11 (60 epoch, 0.01 lr) lower droput
 
 ## Further improvements
 
@@ -127,4 +127,6 @@ Different combinations of previously seen best results:
 
 | Model | Performance | Epochs | Lambda | lr |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Model** | 89.21% | 60 | 0.0001 | 0.01 |
+| **Model 1** | 89.21% | 60 | 0.0001 | 0.01 |
+| **Model 2** | 89.20% | 60 | 0.001 | 0.01 | # without average pooling
+| **Model 3** | x% | 60 | 0.0001 | 0.01 | # try lower dropout (or lambda)

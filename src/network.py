@@ -107,6 +107,7 @@ class Network(nn.Module):
         # self.fc1 = nn.Linear(in_features=CN_params['l_fc1']['in'], out_features=CN_params['l_fc1']['out'])
         # self.bn_fc1 = nn.BatchNorm1d(CN_params['l_fc1']['out'])
         
+        # self.fc2 = nn.Linear(CN_params['l_fc2']['in'], CN_params['l_fc2']['out'])
         self.fc2 = nn.Linear(256, CN_params['l_fc2']['out'])
         # ========================
          
