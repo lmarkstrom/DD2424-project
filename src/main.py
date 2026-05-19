@@ -19,10 +19,10 @@ def trainNet():
         "k": 10,
         "n_batch": 100,
         "img_size": 32,
-        "lam": 0.0001,
+        "lam": 2e-3,
     }
     CN_params = {
-        "l_patchify": {"f": 2, "s": 2, "n_f": 64},
+        "l_patchify": {"f": 1, "s": 1, "n_f": 64},
         "l_vgg1": {"f": 3, "s": 1, "n_f": 64, "r": 16},
         "l_vgg2": {"f": 3, "s": 1, "n_f": 128, "r": 16},
         "l_vgg3": {"f": 3, "s": 1, "n_f": 256, "r": 16},
@@ -32,14 +32,16 @@ def trainNet():
         "eta": 1e-2,
         "scheduler": True,
         "scheduler_type": "cosine",
+        "max_lr": 2e-3,
     }  # "step", "cosine", ...
     RE_params = {
         "se": True,
         "dropout": True,
-        "dropout_rates": [0.3, 0.4, 0.5, 0.5],
+        "dropout_rates": [0.1, 0.1, 0.2, 0.2],
         "augementation": True,
         "flip_prob": 0.5,
         "shift_max": 0.1,
+        "rotation": 15,
         "label_smoothing": True,
         "smoothing_factor": 0.1,
     }

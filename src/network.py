@@ -144,7 +144,7 @@ class Network(nn.Module):
 
         # =======================
         # Dropout
-        self.dropout = nn.Dropout(RE_params["dropout"])
+        self.dropout = RE_params["dropout"]
         self.dropout1 = nn.Dropout(RE_params["dropout_rates"][0])
         self.dropout2 = nn.Dropout(RE_params["dropout_rates"][1])
         self.dropout3 = nn.Dropout(RE_params["dropout_rates"][2])
@@ -174,6 +174,7 @@ class Network(nn.Module):
                 [
                     transforms.RandomHorizontalFlip(p=self.RE_params["flip_prob"]),
                     transforms.RandomCrop(32, padding=4),
+                    transforms.RandomRotation(self.RE_params["rotation"]),
                     # transforms.RandomAffine(degrees=0, translate=(max_shift, max_shift)),
                     transforms.ToTensor(),
                     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
@@ -208,7 +209,7 @@ class Network(nn.Module):
             train_dataset,
             batch_size=self.GD_params["n_batch"],
             shuffle=True,
-            num_workers=4,
+            num_workers=8,
             pin_memory=True,
             persistent_workers=True,
             prefetch_factor=2,
@@ -217,7 +218,7 @@ class Network(nn.Module):
             val_dataset,
             batch_size=self.GD_params["n_batch"],
             shuffle=False,
-            num_workers=4,
+            num_workers=8,
             pin_memory=True,
             persistent_workers=True,
             prefetch_factor=2,
@@ -352,7 +353,7 @@ class Network(nn.Module):
             elif self.LR_params["scheduler_type"] == "cosine":
                 self.scheduler = optim.lr_scheduler.OneCycleLR(
                     self.optimizer,
-                    max_lr=0.01,
+                    max_lr=self.LR_params["max_lr"],
                     steps_per_epoch=len(self.trainloader),
                     anneal_strategy="cos",
                     epochs=n_epochs,
@@ -406,13 +407,12 @@ class Network(nn.Module):
                 val_accuracy, val_loss = self.evaluate(self.valloader)
 
             if debug:
-                loss_delta_new = val_loss - avg_loss
-                if loss_delta_new > loss_delta and val_loss_prev < val_loss:
+                if (train_accuracy - val_accuracy) > 0.05 and val_loss > val_loss_prev:
                     print(
-                        f"Maybe starting to overfit?: Train loss: {avg_loss:.4f} Val loss: {val_loss:.4f}, diff: {loss_delta_new:.4f}"
+                        f"⚠️ True Overfitting Signature: Train Acc {train_accuracy:.2f} vs Val Acc {val_accuracy:.2f}"
                     )
-                loss_delta = loss_delta_new
-                val_loss_prev = val_loss
+
+                    val_loss_prev = val_loss
 
                 print(
                     f"Epoch {epoch + 1}/{n_epochs} | Loss: {avg_loss:.4f} | Val Loss: {val_loss:.4f} | Acc: {train_accuracy:.4f} | Val Acc: {val_accuracy:.4f}"
