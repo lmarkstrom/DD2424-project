@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 
 from dataHelper import loadData
+from layers.seBlock import SEBlock
 from plotHelper import plotPerformance
 
 
@@ -121,6 +122,21 @@ class Network(nn.Module):
         self.fc2 = nn.Linear(CN_params["l_fc2"]["in"], CN_params["l_fc2"]["out"])
         # ========================
 
+        # ========================
+        # SE-Layers
+        self.use_se = nn.Dropout(RE_params["se"])
+        self.se1 = SEBlock(
+            channels=CN_params["l_vgg1"]["n_f"], reduction=CN_params["l_vgg1"]["r"]
+        )
+        self.se2 = SEBlock(
+            channels=CN_params["l_vgg2"]["n_f"], reduction=CN_params["l_vgg2"]["r"]
+        )
+        self.se3 = SEBlock(
+            channels=CN_params["l_vgg3"]["n_f"], reduction=CN_params["l_vgg3"]["r"]
+        )
+
+        # ========================
+
         # =======================
         # Dropout
         self.dropout = nn.Dropout(RE_params["dropout"])
@@ -206,6 +222,9 @@ class Network(nn.Module):
         x = self.bn2(x)
         x = F.relu(x)
 
+        if self.use_se:
+            x = self.se1(x)
+
         x = self.pool1(x)
         if self.dropout:
             x = self.dropout1(x)
@@ -219,6 +238,9 @@ class Network(nn.Module):
         x = self.conv4(x)
         x = self.bn4(x)
         x = F.relu(x)
+
+        if self.use_se:
+            x = self.se2(x)
 
         # Apply maxpooling layer
         x = self.pool2(x)
@@ -234,6 +256,9 @@ class Network(nn.Module):
         x = self.conv6(x)
         x = self.bn6(x)
         x = F.relu(x)
+
+        if self.use_se:
+            x = self.se3(x)
 
         if self.dropout:
             x = self.dropout3(x)
