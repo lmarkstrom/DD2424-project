@@ -17,11 +17,11 @@ class SEBlock(nn.Module):
             nn.Sigmoid(),
         )
 
-        def forward(self, x):
-            b, c, _, _ = x.size()
+    def forward(self, x):
+        b, c, _, _ = x.size()
 
-            squeeze = self.gap(x).view(b, c)
-            excitation = self.fc(squeeze).view(b, c, 1, 1)
+        squeeze = self.gap(x).view(b, c)
+        excitation = self.fc(squeeze).view(b, c, 1, 1)
 
-            # Conditioned output (self attention-ish)
-            return x * excitation
+        # Conditioned output (self attention-ish)
+        return x * excitation
