@@ -25,4 +25,5 @@ def plotPerformance(results):
     plt.legend(fontsize=14)
 
     plt.tight_layout()
-    plt.show()
+    # plt.show()
+    plt.savefig("se_training.png")

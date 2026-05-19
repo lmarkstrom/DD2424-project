@@ -38,6 +38,10 @@ class Network(nn.Module):
         self.LR_params = LR_params
         self.RE_params = RE_params
 
+        self.device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
+
+        print(f"Using device: {self.device}")
+
         # ========================
         # Patchify layer
         self.patchify = nn.Conv2d(
@@ -206,6 +210,7 @@ class Network(nn.Module):
             val_dataset, batch_size=self.GD_params["n_batch"], shuffle=False
         )
         # ========================
+        self.to(self.device)
 
     def forward(self, x):
         x = self.patchify(x)
@@ -293,6 +298,9 @@ class Network(nn.Module):
         with torch.no_grad():
             count = 0
             for inputs, labels in dataset:
+                inputs = inputs.to(self.device)
+                labels = labels.to(self.device)
+
                 outputs = self(inputs)
                 loss += self.criterion(outputs, labels).item()
                 _, predicted = torch.max(outputs.data, 1)
@@ -350,6 +358,9 @@ class Network(nn.Module):
             running_total = 0
 
             for inputs, labels in self.trainloader:
+                inputs = inputs.to(self.device)
+                labels = labels.to(self.device)
+
                 self.optimizer.zero_grad()
 
                 outputs = self(inputs)
