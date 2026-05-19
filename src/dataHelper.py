@@ -41,4 +41,3 @@ def loadData(batch_size=100, train_transform=None):
     )
 
     return trainset_augmented, trainset_original, testloader, classes
-

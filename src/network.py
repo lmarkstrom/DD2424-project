@@ -128,7 +128,8 @@ class Network(nn.Module):
 
         # ========================
         # SE-Layers
-        self.use_se = nn.Dropout(RE_params["se"])
+        self.use_se = RE_params["se"]
+
         self.se1 = SEBlock(
             channels=CN_params["l_vgg1"]["n_f"], reduction=CN_params["l_vgg1"]["r"]
         )
@@ -204,10 +205,22 @@ class Network(nn.Module):
 
         # DataLoaders
         self.trainloader = DataLoader(
-            train_dataset, batch_size=self.GD_params["n_batch"], shuffle=True
+            train_dataset,
+            batch_size=self.GD_params["n_batch"],
+            shuffle=True,
+            num_workers=4,
+            pin_memory=True,
+            persistent_workers=True,
+            prefetch_factor=2,
         )
         self.valloader = DataLoader(
-            val_dataset, batch_size=self.GD_params["n_batch"], shuffle=False
+            val_dataset,
+            batch_size=self.GD_params["n_batch"],
+            shuffle=False,
+            num_workers=4,
+            pin_memory=True,
+            persistent_workers=True,
+            prefetch_factor=2,
         )
         # ========================
         self.to(self.device)

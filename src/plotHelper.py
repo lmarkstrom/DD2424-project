@@ -26,4 +26,4 @@ def plotPerformance(results):
 
     plt.tight_layout()
     # plt.show()
-    plt.savefig("../se_training.png")
+    plt.savefig("se_training.png")
