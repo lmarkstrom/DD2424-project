@@ -319,7 +319,7 @@ class Network(nn.Module):
                 loss_delta = loss_delta_new
                 val_loss_prev = val_loss
 
-                print(f'Epoch {epoch+1}/{n_epochs} | Loss: {avg_loss:.4f} | Val Loss: {val_loss:.4f} | Acc: {train_accuracy:.4f} | Val Acc: {val_accuracy:.4f}')
+                print(f"Epoch {epoch+1}/{n_epochs} | Loss: {avg_loss:.4f} | Val Loss: {val_loss:.4f} | Acc: {train_accuracy:.4f} | Val Acc: {val_accuracy:.4f}")
             if plot:
                 results['loss'].append(avg_loss)
                 results['val_loss'].append(val_loss)

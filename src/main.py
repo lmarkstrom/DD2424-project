@@ -27,9 +27,9 @@ def trainNet():
         'label_smoothing': True, 'smoothing_factor': 0.1}
     
     network = Network(LR_params, GD_params, CN_params, RE_params)
-    network.trainModel(plot=True)
+    network.trainModel(plot=False)
     res = network.evaluate(network.testloader)[0]
-    print(f'Final Test Accuracy: {res}')
+    print(f"Final Test Accuracy: {res}")
 
 
 

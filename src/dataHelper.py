@@ -13,10 +13,10 @@ def loadData(batch_size=100, train_transform=None):
               train_transform = transform
               
        trainset_augmented = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                                 download=False, transform=train_transform)
+                                                 download=True, transform=train_transform)
 
        trainset_original = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                                 download=False, transform=transform)
+                                                 download=True, transform=transform)
 
        testset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                           download=True, transform=transform)
