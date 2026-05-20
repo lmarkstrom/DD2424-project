@@ -18,7 +18,6 @@ class ECABlock(nn.Module):
         # equation (12) in research paper
         t = int(abs((log(channels, 2) + b) / gamma))
 
-        # if odd, increase by 1 (nearest number of t)
         k_size = t if t % 2 else t + 1
 
         self.avg_pool = nn.AdaptiveAvgPool2d(1)

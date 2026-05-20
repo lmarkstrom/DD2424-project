@@ -38,8 +38,8 @@ def trainNet():
         # WARN: Only use ONE of se OR eca.
         # They are competing layers and using
         # both will have undesired consquences!
-        "se": False,
         "eca": True,
+        "se": False,
         "dropout": True,
         "dropout_rates": [0.1, 0.1, 0.2, 0.2],
         "augementation": True,
