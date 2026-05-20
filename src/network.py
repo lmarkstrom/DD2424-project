@@ -37,70 +37,42 @@ class Network(nn.Module):
             kernel_size=CN_params['l_patchify']['f'],
             stride=CN_params['l_patchify']['s'],
         )
-        self.bn_patch = nn.BatchNorm2d(CN_params['l_patchify']['n_f'])
+        self.ln_patch = nn.LayerNorm(CN_params['l_patchify']['n_f'])
         # ========================
         
         # ========================
-        # VGG Block-1
-        self.conv1 = nn.Conv2d(
-            in_channels=CN_params['l_vgg1']['n_f'], 
-            out_channels=CN_params['l_vgg1']['n_f'], 
-            kernel_size=CN_params['l_vgg1']['f'], 
-            stride=CN_params['l_vgg1']['s'], 
-            padding='same')
-        self.bn1 = nn.BatchNorm2d(CN_params['l_vgg1']['n_f'])
-        
-        self.conv2 = nn.Conv2d(
-            in_channels=CN_params['l_vgg1']['n_f'], 
-            out_channels=CN_params['l_vgg1']['n_f'], 
-            kernel_size=CN_params['l_vgg1']['f'], 
-            stride=CN_params['l_vgg1']['s'], 
-            padding='same')
-        self.bn2 = nn.BatchNorm2d(CN_params['l_vgg1']['n_f'])
-        
-        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        # ConvNeXt Block
+
+        # Depthwise convolution
+        self.conv_depthwise = nn.Conv2d(
+            in_channels=CN_params['l_patchify']['n_f'], 
+            out_channels=CN_params['l_conv_depthwise']['n_f'], 
+            kernel_size=CN_params['l_conv_depthwise']['f'], 
+            stride=CN_params['l_conv_depthwise']['s'],
+            padding=3, 
+            groups=CN_params['l_conv_depthwise']['n_f']) # Depthwise convolution
+        # Layer normalization
+        self.ln1 = nn.LayerNorm(CN_params['l_conv_depthwise']['n_f']) # TODO: Alternative: self.norm = nn.GroupNorm(1, CN_params['l_conv_depthwise']['n_f']). In that case, also simplify the syntax in the forward pass
+
+        # Expand pointwise convolution
+        multiplier = 4 # TODO: This can be tuned
+        self.conv_pointwise1 = nn.Conv2d(
+            in_channels=CN_params['l_conv_depthwise']['n_f'],
+            out_channels=CN_params['l_conv_pointwise1']['n_f'] * multiplier,
+            kernel_size=CN_params['l_conv_pointwise1']['f'],
+            stride=CN_params['l_conv_pointwise1']['s'])
+        # GELU activation
+        self.gelu = nn.GELU()
+
+        # Project pointwise convolution
+        self.conv_pointwise2 = nn.Conv2d(
+            in_channels=CN_params['l_conv_pointwise1']['n_f'] * multiplier,
+            out_channels=CN_params['l_conv_pointwise2']['n_f'],
+            kernel_size=CN_params['l_conv_pointwise2']['f'],
+            stride=CN_params['l_conv_pointwise2']['s'])
         # ========================
 
-        # ========================
-        # VGG Block-2
-        self.conv3 = nn.Conv2d(
-            in_channels=CN_params['l_vgg1']['n_f'], 
-            out_channels=CN_params['l_vgg2']['n_f'], 
-            kernel_size=CN_params['l_vgg2']['f'], 
-            stride=CN_params['l_vgg2']['s'], 
-            padding='same')
-        self.bn3 = nn.BatchNorm2d(CN_params['l_vgg2']['n_f'])
-        
-        self.conv4 = nn.Conv2d(
-            in_channels=(CN_params['l_vgg2']['n_f']), 
-            out_channels=CN_params['l_vgg2']['n_f'], 
-            kernel_size=CN_params['l_vgg2']['f'], 
-            stride=CN_params['l_vgg2']['s'], 
-            padding='same')
-        self.bn4 = nn.BatchNorm2d(CN_params['l_vgg2']['n_f'])
-        
-        self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
-        # ========================
-
-        # ========================
-        # VGG Block-3
-        self.conv5 = nn.Conv2d(
-            in_channels=CN_params['l_vgg2']['n_f'], 
-            out_channels=CN_params['l_vgg3']['n_f'], 
-            kernel_size=CN_params['l_vgg3']['f'], 
-            stride=CN_params['l_vgg3']['s'], 
-            padding='same')
-        self.bn5 = nn.BatchNorm2d(CN_params['l_vgg3']['n_f'])
-        
-        self.conv6 = nn.Conv2d(
-            in_channels=CN_params['l_vgg3']['n_f'], 
-            out_channels=CN_params['l_vgg3']['n_f'], 
-            kernel_size=CN_params['l_vgg3']['f'], 
-            stride=CN_params['l_vgg3']['s'], 
-            padding='same')
         self.gap = nn.AdaptiveAvgPool2d((1, 1))
-        self.bn6 = nn.BatchNorm2d(CN_params['l_vgg3']['n_f'])
-        # ========================
 
         # ========================
         # Linear layers
@@ -111,9 +83,6 @@ class Network(nn.Module):
         # Dropout
         self.dropout = nn.Dropout(RE_params["dropout"])
         self.dropout1 = nn.Dropout(RE_params["dropout_rates"][0])
-        self.dropout2 = nn.Dropout(RE_params["dropout_rates"][1])
-        self.dropout3 = nn.Dropout(RE_params["dropout_rates"][2])
-        self.dropout4 = nn.Dropout(RE_params["dropout_rates"][3])
         # ========================
 
         # ========================
@@ -165,51 +134,17 @@ class Network(nn.Module):
 
     def forward(self, x):
         x = self.patchify(x)
-        x = self.bn_patch(x)
-        x = F.relu(x)
+        x = self.ln_patch(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2) # LayerNorm expects (N, C, H, W) -> (N, H, W, C) -> (N, C, H, W)
         
         # ========================
-        # VGG Block-1
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = F.relu(x)
-        
-        x = self.conv2(x)
-        x = self.bn2(x)
-        x = F.relu(x)
-        
-        x = self.pool1(x)
-        if self.dropout:
-            x = self.dropout1(x)
-        # ========================
-        # ========================
-        # VGG Block-2
-        x = self.conv3(x)
-        x = self.bn3(x)
-        x = F.relu(x)
-        
-        x = self.conv4(x)
-        x = self.bn4(x)
-        x = F.relu(x)
-        
-        # Apply maxpooling layer
-        x = self.pool2(x)
-        if self.dropout:
-            x = self.dropout2(x)
-        # ========================
-        # ========================
-        # VGG Block-3
-        x = self.conv5(x)
-        x = self.bn5(x)
-        x = F.relu(x)
-        
-        x = self.conv6(x)
-        x = self.bn6(x)
-        x = F.relu(x)
-        
-        if self.dropout:
-            x = self.dropout3(x)
-        # Removed pooling in last layer as per instructions
+        # ConvNeXt Block
+        residual = x
+        x = self.conv_depthwise(x)
+        x = self.ln1(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2) # LayerNorm expects different format
+        x = self.conv_pointwise1(x)
+        x = self.gelu(x)
+        x = self.conv_pointwise2(x)
+        x += residual # Residual/skip connection
         # ========================
         
         x = self.gap(x)
@@ -218,7 +153,7 @@ class Network(nn.Module):
         x = x.view(x.size(0), -1)
         
         if self.dropout:
-            x = self.dropout4(x)
+            x = self.dropout1(x)
         # fc2 layer
         x = self.fc2(x)
 
