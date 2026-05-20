@@ -12,11 +12,11 @@ class ECABlock(nn.Module):
         k_size: Adaptive selection of kernel size
     """
 
-    def __init__(self, channel, gamma=2, b=1):
+    def __init__(self, channels, gamma=2, b=1):
         super(ECABlock, self).__init__()
 
         # equation (12) in research paper
-        t = int(abs((log(channel, 2) + b) / gamma))
+        t = int(abs((log(channels, 2) + b) / gamma))
 
         # if odd, increase by 1 (nearest number of t)
         k_size = t if t % 2 else t + 1
