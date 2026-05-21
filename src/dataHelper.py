@@ -12,14 +12,14 @@ def loadData(batch_size=100, train_transform=None):
        if train_transform is None:
               train_transform = transform
               
-       trainset_augmented = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                                 download=True, transform=train_transform)
+       trainset_augmented = torchvision.datasets.CIFAR10(root='../data', train=True,
+                                                 download=False, transform=train_transform)
 
-       trainset_original = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                                 download=True, transform=transform)
+       trainset_original = torchvision.datasets.CIFAR10(root='../data', train=True,
+                                                 download=False, transform=transform)
 
-       testset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                          download=True, transform=transform)
+       testset = torchvision.datasets.CIFAR10(root='../data', train=False,
+                                          download=False, transform=transform)
 
        testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                                  shuffle=False, num_workers=2)

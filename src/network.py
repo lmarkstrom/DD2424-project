@@ -5,6 +5,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Subset, random_split
 import numpy as np
 from torchvision import transforms
+from torchvision.ops import StochasticDepth
 
 from dataHelper import loadData
 from plotHelper import plotPerformance
@@ -15,7 +16,7 @@ class ConvNeXtBlock(nn.Module):
     Modular ConvNeXt Block
     """
 
-    def __init__(self, dim, CN_params):
+    def __init__(self, dim, CN_params, dropout_rate=0.0):
         super().__init__()
         multiplier = 4  # Expansion factor for the pointwise convolution
         # Depthwise convolution
@@ -37,6 +38,8 @@ class ConvNeXtBlock(nn.Module):
             in_channels=multiplier * dim, 
             out_channels=dim, 
             kernel_size=CN_params["l_conv_pointwise"]["f"])
+        # Stochastic depth
+        self.stochastic_depth = StochasticDepth(dropout_rate, mode="row")
 
     def forward(self, x):
         residual = x
@@ -47,6 +50,7 @@ class ConvNeXtBlock(nn.Module):
         x = self.pwconv1(x)
         x = self.gelu(x)
         x = self.pwconv2(x)
+        x = self.stochastic_depth(x)
         return residual + x
 
 
@@ -91,10 +95,12 @@ class Network(nn.Module):
         # ========================
         # ConvNeXt Stages
         self.stages = nn.ModuleList()
+        cur = 0
         for i in range(3):
             stage_blocks = []
             for j in range(CN_params["depths"][i]):
-                stage_blocks.append(ConvNeXtBlock(CN_params["dims"][i], CN_params))
+                stage_blocks.append(ConvNeXtBlock(CN_params["dims"][i], CN_params, dropout_rate=RE_params["dropout_rates"][cur]))
+                cur += 1
             self.stages.append(nn.Sequential(*stage_blocks))
 
         # ========================
@@ -104,14 +110,7 @@ class Network(nn.Module):
 
         # ========================
         # Linear layers
-        self.fc2 = nn.Linear(CN_params["dims"][-1], CN_params["l_fc2"]["out"])
-        # ========================
-
-        # ========================
-        # Dropout
-        self.dropout = nn.Dropout(RE_params["dropout"])
-        self.dropout1 = nn.Dropout(RE_params["dropout_rates"][0])
-        # ========================
+        self.fc = nn.Linear(CN_params["dims"][-1], CN_params["l_fc"]["out"])
 
         # ========================
         # Optimizers and metrics criterion
@@ -170,17 +169,17 @@ class Network(nn.Module):
             x = self.downsample_layers[i](x)
             x = self.stages[i](x)
 
+        # Global average pooling
         x = self.gap(x)
 
         # Flattening (to connect to fc layer)
         x = x.view(x.size(0), -1)
 
+        # LayerNorm before the final fc layer
         x = self.head_norm(x)
 
-        if self.dropout:
-            x = self.dropout1(x)
-        # fc2 layer
-        x = self.fc2(x)
+        # fc layer
+        x = self.fc(x)
 
         return x
 
@@ -236,7 +235,7 @@ class Network(nn.Module):
                                                                anneal_strategy="cos",
                                                                epochs=n_epochs)
             else:
-                raise ValueError(f"Unsupported scheduler type: {self.LR_params['scheduler_type']}")
+                raise ValueError(f"Unsupported scheduler type: {self.LR_params["scheduler_type"]}")
 
         for epoch in range(n_epochs):
             self.train()
