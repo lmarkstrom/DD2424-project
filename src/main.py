@@ -35,7 +35,11 @@ def trainNet():
         "max_lr": 2e-3,
     }  # "step", "cosine", ...
     RE_params = {
-        "se": True,
+        # WARN: Only use ONE of se OR eca.
+        # They are competing layers and using
+        # both will have undesired consquences!
+        "eca": True,
+        "se": False,
         "dropout": True,
         "dropout_rates": [0.1, 0.1, 0.2, 0.2],
         "augementation": True,

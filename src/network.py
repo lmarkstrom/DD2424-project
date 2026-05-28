@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 
 from dataHelper import loadData
+from layers.ecaBlock import ECABlock
 from layers.seBlock import SEBlock
 from plotHelper import plotPerformance
 
@@ -140,7 +141,11 @@ class Network(nn.Module):
             channels=CN_params["l_vgg3"]["n_f"], reduction=CN_params["l_vgg3"]["r"]
         )
 
-        # ========================
+        # ECA-Layers
+        self.use_eca = RE_params["eca"]
+        self.eca1 = ECABlock(channels=CN_params["l_vgg1"]["n_f"])
+        self.eca2 = ECABlock(channels=CN_params["l_vgg2"]["n_f"])
+        self.eca3 = ECABlock(channels=CN_params["l_vgg3"]["n_f"])
 
         # =======================
         # Dropout
@@ -243,6 +248,8 @@ class Network(nn.Module):
 
         if self.use_se:
             x = self.se1(x)
+        if self.use_eca:
+            x = self.eca1(x)
 
         x = self.pool1(x)
         if self.dropout:
@@ -260,6 +267,8 @@ class Network(nn.Module):
 
         if self.use_se:
             x = self.se2(x)
+        if self.use_eca:
+            x = self.eca2(x)
 
         # Apply maxpooling layer
         x = self.pool2(x)
@@ -278,6 +287,8 @@ class Network(nn.Module):
 
         if self.use_se:
             x = self.se3(x)
+        if self.use_eca:
+            x = self.eca3(x)
 
         if self.dropout:
             x = self.dropout3(x)
@@ -409,7 +420,7 @@ class Network(nn.Module):
             if debug:
                 if (train_accuracy - val_accuracy) > 0.05 and val_loss > val_loss_prev:
                     print(
-                        f"⚠️ True Overfitting Signature: Train Acc {train_accuracy:.2f} vs Val Acc {val_accuracy:.2f}"
+                        f"(!) Possibly overfitting : Train Acc {train_accuracy:.2f} vs Val Acc {val_accuracy:.2f}"
                     )
 
                     val_loss_prev = val_loss
