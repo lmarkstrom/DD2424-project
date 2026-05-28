@@ -147,8 +147,6 @@ class Network(nn.Module):
         self.eca2 = ECABlock(channels=CN_params["l_vgg2"]["n_f"])
         self.eca3 = ECABlock(channels=CN_params["l_vgg3"]["n_f"])
 
-        # ========================
-
         # =======================
         # Dropout
         self.dropout = RE_params["dropout"]
@@ -345,6 +343,7 @@ class Network(nn.Module):
         """
 
         n_epochs = self.GD_params["n_epochs"]
+        loss_delta = np.inf
         val_loss_prev = np.inf
 
         if plot:
@@ -421,7 +420,7 @@ class Network(nn.Module):
             if debug:
                 if (train_accuracy - val_accuracy) > 0.05 and val_loss > val_loss_prev:
                     print(
-                        f"(!) Overfitting : Train Acc {train_accuracy:.2f} vs Val Acc {val_accuracy:.2f}"
+                        f"(!) Possibly overfitting : Train Acc {train_accuracy:.2f} vs Val Acc {val_accuracy:.2f}"
                     )
 
                     val_loss_prev = val_loss
